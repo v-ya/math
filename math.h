@@ -25,3 +25,4 @@ char* cal(char *, var *);
 int math_run(char *, char *, int , var *);
 
 #endif
+
