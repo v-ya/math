@@ -1,4 +1,11 @@
+# 计算 1+2+...+100
 #start
-.echo("%d,%d,%d\n",.sign(-2.1),.sign(0),.sign(23));
+.set("int:i","int:n");
+:0@i@n;
+#loop
+:i+1@i
+:n+i@n;
+.if(:i<100); .jup("loop");
+.echo("1+2+...+100 = %d\n",n);
+.unset("i","n");
 .exit(0);
-
