@@ -1,4 +1,5 @@
-# 计算 1+2+...+100
+#!/usr/bin/math
+# Calculate 1+2+...+100
 #start
 .set("int:i","int:n");
 :0@i@n;
