@@ -18,6 +18,8 @@ typedef union VALUE {
 
 // type
 #define	m_type(m)	((m)&0xff)
+#define	m_type2(m)	((m)&0xffff00ff)
+#define	m_type3(m)	((m)&0xffff10ff)
 #define	type_err	0xff
 #define	type_end	0xfe
 #define	type_void	0
@@ -79,6 +81,7 @@ void v_free(varmat *, char *);
 void v_freeall(varmat *);
 varmat* v_list(varmat *, var *);
 varmat* v_add(varmat *, varmat *);
+var* var_poin(var *, var *);
 
 char* str_type(unsigned int);
 void varmat_print(varmat *);

@@ -5,5 +5,9 @@ math: ${obj}
 run: math
 	./math test.txt
 clear:
-	rm -f *.o
+	rm -f *.o math
+
+install: math
+	cp math /usr/bin/math
+	chmod 0755 /usr/bin/math
 

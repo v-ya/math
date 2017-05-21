@@ -1,5 +1,50 @@
 #include "math.h"
 
+char funbuff[funbuff_size];
+#define	vlist_max 16
+char _vlist_buff[vlist_max*sizeof(void*)];
+
+void vlist_set(va_list *ap, var *vlist)
+{
+	void *va;
+	int i;
+	va=_vlist_buff;
+	i=0;
+	if (sizeof(void*)==4) while(vlist&&i<(vlist_max-1))
+	{
+		if (m_type2(vlist->mode)==type_long||m_type2(vlist->mode)==type_float)
+		{
+			((unsigned int*)va)[i]=(unsigned int)(vlist->v.v_long);
+			i++;
+			((unsigned int*)va)[i]=(unsigned int)(vlist->v.v_long>>32);
+			vlist=vlist->r;
+			i++;
+		}
+		else
+		{
+			((void**)va)[i]=vlist->v.v_void;
+			vlist=vlist->r;
+			i++;
+		}
+	}
+	else if (sizeof(void*)==8) while(vlist&&(vlist_max-1))
+	{
+		((void**)va)[i]=vlist->v.v_void;
+		vlist=vlist->r;
+		i++;
+	}
+	((void**)va)[i]=NULL;
+	// gcc
+	#if (defined( __linux__) && defined(__x86_64__))
+	(*ap)[0].gp_offset = 48;
+	(*ap)[0].fp_offset = 304;
+	(*ap)[0].reg_save_area = NULL;
+	(*ap)[0].overflow_arg_area = va;
+	#else
+	(*ap)=va;
+	#endif
+}
+
 #define	argv(argc) var_find(vlist,spget("_",argc))
 
 int _int(var *vp)
@@ -53,10 +98,11 @@ _fun(jdw)
 	if (n>0)
 	{
 		vp=argv(0);
-		if (m_leng(vp->mode)==leng_no&&m_type(vp->mode)==type_string)
+		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
 	if (!lab) goto end;
+	else if (lab[0]==0) goto end;
 	while(*s)
 	{
 		while(*s&&*s!='\n') s++;
@@ -85,10 +131,11 @@ _fun(jup)
 	if (n>0)
 	{
 		vp=argv(0);
-		if (m_leng(vp->mode)==leng_no&&m_type(vp->mode)==type_string)
+		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
 	if (!lab) goto end;
+	else if (lab[0]==0) goto end;
 	while(s>start)
 	{
 		while(s>start&&*s!='\n') s--;
@@ -101,6 +148,65 @@ _fun(jup)
 	return ;
 	end:
 	*exps=s;
+}
+
+_fun(ldw_test)
+{
+	char *s=*exps,*lab=NULL;
+	var *vp;
+	ret->mode=type_int;
+	ret->v.v_int=0;
+	if (n>0)
+	{
+		vp=argv(0);
+		if (m_type2(vp->mode)==type_string)
+		lab=vp->v.v_string;
+	}
+	if (!lab) return ;
+	else if (lab[0]==0) return ;
+	while(*s)
+	{
+		while(*s&&*s!='\n') s++;
+		if (*s) s++;
+		if (*s=='#'&&scmp(s+1,lab)) goto end;
+	}
+	return ;
+	end:
+	ret->v.v_int=1;
+}
+
+_fun(lup_test)
+{
+	char *s=*exps,*lab=NULL,*start;
+	var *vp;
+	ret->mode=type_int;
+	ret->v.v_int=0;
+	vp=v_find(math_vm,"_start");
+	if (!vp)
+	{
+		dp(".jup: 不能找到预设变量 _start\n");
+		return ;
+	}
+	start=(char*)vp->v.v_void;
+	if (n>0)
+	{
+		vp=argv(0);
+		if (m_type2(vp->mode)==type_string)
+		lab=vp->v.v_string;
+	}
+	if (!lab) return ;
+	else if (lab[0]==0) return ;
+	while(s>start)
+	{
+		while(s>start&&*s!='\n') s--;
+		if (*s=='\n') s++;
+		if (*s=='#'&&scmp(s+1,lab)) goto end;
+		if (s>start&&*(s-1)=='\n') s--;
+		if (s>start&&*s=='\n') s--;
+	}
+	return ;
+	end:
+	ret->v.v_int=1;
 }
 
 _fun(calldw)
@@ -131,10 +237,11 @@ _fun(calldw)
 	if (n>0)
 	{
 		vp=argv(0);
-		if (m_leng(vp->mode)==leng_no&&m_type(vp->mode)==type_string)
+		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
 	if (!lab) goto end;
+	else if (lab[0]==0) goto end;
 	while(*s)
 	{
 		while(*s&&*s!='\n') s++;
@@ -180,10 +287,11 @@ _fun(callup)
 	if (n>0)
 	{
 		vp=argv(0);
-		if (m_leng(vp->mode)==leng_no&&m_type(vp->mode)==type_string)
+		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
 	if (!lab) goto end;
+	else if (lab[0]==0) goto end;
 	while(s>start)
 	{
 		while(s>start&&*s!='\n') s--;
@@ -284,90 +392,22 @@ _fun(exit)
 
 _fun(echo)
 {
+	va_list ap;
 	char *s;
 	ret->mode=type_void;
 	ret->v.v_void=NULL;
 	while(vlist->l) vlist=vlist->l;
-	if (m_leng(vlist->mode)!=leng_no||m_type(vlist->mode)!=type_string)
+	if (m_type2(vlist->mode)!=type_string)
 	{
 		dp("echo: %s 不是 string 类型\n",vlist->name);
 		return ;
 	}
 	s=vlist->v.v_string;
-	while(*s)
-	{
-		if (*s=='%') switch(*(++s))
-		{
-			case '%':
-				dp("%");
-				break;
-			case 'd':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%d",_int(vlist));
-				}
-				break;
-			case 'D':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%ld",_long(vlist));
-				}
-				break;
-			case 'f':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%f",_float(vlist));
-				}
-				break;
-			case 'e':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%e",_float(vlist));
-				}
-				break;
-			case 'g':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%g",_float(vlist));
-				}
-				break;
-			case 's':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					if (m_leng(vlist->mode)==leng_no&&m_type(vlist->mode)==type_string) dp("%s",vlist->v.v_string);
-				}
-				break;
-			case 'c':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%c",_int(vlist));
-				}
-				break;
-			case 'x':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%08x",_int(vlist));
-				}
-				break;
-			case 'X':
-				if (vlist->r)
-				{
-					vlist=vlist->r;
-					dp("%016lx",_long(vlist));
-				}
-				break;
-		}
-		else dp("%c",*s);
-		s++;
-	}
+	vlist=vlist->r;
+	vlist_set(&ap,vlist);
+	vsnprintf(funbuff,funbuff_size,s,ap);
+	dp(funbuff);
+	return ;
 }
 
 _fun(set)
@@ -379,7 +419,7 @@ _fun(set)
 	ret->v.v_void=NULL;
 	if (call)
 	{
-		if (m_leng(call->mode)!=leng_no||m_type(call->mode)!=type_object)
+		if (m_type2(call->mode)!=type_object)
 		{
 			dp(".set: %s 变量不是 object 类型\n",call->name);
 			return ;
@@ -388,7 +428,7 @@ _fun(set)
 	while(vlist->l) vlist=vlist->l;
 	for(;vlist;vlist=vlist->r)
 	{
-		if (m_leng(vlist->mode)!=leng_no||m_type(vlist->mode)!=type_string)
+		if (m_type2(vlist->mode)!=type_string)
 		{
 			dp(".set: %s 变量不是 string 类型\n");
 			continue;
@@ -413,9 +453,9 @@ _fun(set)
 		s++;
 		name=sget(s);
 		s=sskip(s);
-		if (name[0]==0||name[0]=='_')
+		if (name[0]==0)
 		{
-			dp(".set: 未找到合法名称(应不以 '_' 开头且长度大于 0)\n");
+			dp(".set: 未找到合法名称\n");
 			continue;
 		}
 		if (strlen(name)>=12)
@@ -433,7 +473,7 @@ _fun(set)
 		if (call)
 		{
 			vp=var_find(call->v.v_object,name);
-			if (m_auth_set(call->mode)) goto err_auth;
+			if (m_auth_rev(call->mode)) goto err_auth;
 			if (vp)
 			{
 				if (m_auth_set(vp->mode))
@@ -476,7 +516,7 @@ _fun(unset)
 	ret->v.v_void=NULL;
 	if (call)
 	{
-		if (m_leng(call->mode)!=leng_no||m_type(call->mode)!=type_object)
+		if (m_type2(call->mode)!=type_object)
 		{
 			dp(".unset: %s 变量不是 object 类型\n",call->name);
 			return ;
@@ -485,7 +525,7 @@ _fun(unset)
 	while(vlist->l) vlist=vlist->l;
 	for(;vlist;vlist=vlist->r)
 	{
-		if (m_leng(vlist->mode)!=leng_no||m_type(vlist->mode)!=type_string)
+		if (m_type2(vlist->mode)!=type_string)
 		{
 			dp(".unset: %s 变量不是 string 类型\n");
 			continue;
@@ -518,6 +558,117 @@ _fun(unset)
 }
 
 // other
+_fun(test)
+{
+	
+	var *vp,*vt,v,v2;
+	int px;
+	char *name;
+	ret->mode=type_int;
+	ret->v.v_int=0;
+	if (n>0)
+	{
+		vp=argv(0);
+		name=_string(vp);
+		if (name)
+		{
+			if (name[0]=='.')
+			{
+				name++;
+				if (is_Name(*name)) vp=v_find(glob_vm,sget(name));
+				else return ;
+			}
+			else if (is_Name(*name)) vp=v_find(math_vm,sget(name));
+			else return ;
+			name=sskip(name);
+			if (!vp) return ;
+			while(*name)
+			{
+				switch(*name)
+				{
+					case '.':
+						name++;
+						if (m_type2(vp->mode)==type_object) vp=var_find(vp->v.v_object,sget(name));
+						else return ;
+						name=sskip(name);
+						break;
+					case '[':
+						name=cal(name,&v2);
+						px=(int)v2.v.v_float;
+						if (px<0||px>=m_leng(vp->mode)) return ;
+						v.mode=vp->mode&0x0000ffff;
+						if (m_type(v.mode)==type_object) v.v.v_object=((var**)(vp->v.v_void))[px];
+						else v.v.v_void=NULL;
+						vp=&v;
+						break;
+					default:
+						return ;
+				}
+				if (!vp) return ;
+			}
+		}
+		else return ;
+		if (n==1) goto is_ex;
+		vt=argv(1);
+		name=_string(vt);
+		if (!name) return ;
+		switch(m_type(vp->mode))
+		{
+			case type_void:
+				if (m_leng(vp->mode))
+				{
+					if (strcmp(name,"void[]")==0) goto is_ex;
+					else return ;
+				}
+				else if (strcmp(name,"void")==0) goto is_ex;
+				else if (m_func(vp->mode)&&strcmp(name,"func")==0) goto is_ex;
+				return ;
+			case type_int:
+				if (m_leng(vp->mode))
+				{
+					if (strcmp(name,"int[]")==0) goto is_ex;
+					else return ;
+				}
+				else if (strcmp(name,"int")==0) goto is_ex;
+				return ;
+			case type_long:
+				if (m_leng(vp->mode))
+				{
+					if (strcmp(name,"long[]")==0) goto is_ex;
+					else return ;
+				}
+				else if (strcmp(name,"long")==0) goto is_ex;
+				return ;
+			case type_float:
+				if (m_leng(vp->mode))
+				{
+					if (strcmp(name,"float[]")==0) goto is_ex;
+					else return ;
+				}
+				else if (strcmp(name,"float")==0) goto is_ex;
+				return ;
+			case type_string:
+				if (m_leng(vp->mode))
+				{
+					if (strcmp(name,"string[]")==0) goto is_ex;
+					else return ;
+				}
+				else if (strcmp(name,"string")==0) goto is_ex;
+				return ;
+			case type_object:
+				if (m_leng(vp->mode))
+				{
+					if (strcmp(name,"object[]")==0) goto is_ex;
+					else return ;
+				}
+				else if (strcmp(name,"object")==0) goto is_ex;
+				return ;
+		}
+	}
+	is_ex:
+	ret->v.v_int=1;
+}
+
 _fun(clear)
 {
 	char *name;
@@ -527,9 +678,9 @@ _fun(clear)
 	while(vlist->l) vlist=vlist->l;
 	for(;vlist;vlist=vlist->r)
 	{
-		if (m_leng(vlist->mode)!=leng_no||m_type(vlist->mode)!=type_string)
+		if (m_type2(vlist->mode)!=type_string)
 		{
-			dp(".clear: %s 变量不是 string 类型\n");
+			dp(".clear: %s 变量不是 string 类型\n",vlist->name);
 			continue;
 		}
 		name=vlist->v.v_string;
@@ -537,10 +688,94 @@ _fun(clear)
 		else continue;
 		if (vp)
 		{
-			if (m_auth_set(vp->mode)) dp(".clear: 无权清除变量 %s\n");
-			else value_free(vp);
+			int i;
+			if (m_auth_rev(vp->mode)) dp(".clear: 无权清除变量 %s\n",name);
+			if (m_poin(vp->mode))
+			{
+				v.mode=vp->mode&0x0000ffff&(~type_pointer)|0x00010000;
+				v.v.v_void=vp->v.v_void;
+				vp=&v;
+			}
+			switch(m_type(vp->mode))
+			{
+				case type_void:
+					if (m_leng(vp->mode)) for(i=m_leng(vp->mode)-1;i>=0;i--)
+					{
+						((void **)(vp->v.v_void))[i]=NULL;
+					}
+					else vp->v.v_void=NULL;
+					return ;
+				case type_int:
+					if (m_leng(vp->mode)) for(i=m_leng(vp->mode)-1;i>=0;i--)
+					{
+						((int *)(vp->v.v_void))[i]=0;
+					}
+					else vp->v.v_int=0;
+					return ;
+				case type_long:
+					if (m_leng(vp->mode)) for(i=m_leng(vp->mode)-1;i>=0;i--)
+					{
+						((long long *)(vp->v.v_void))[i]=0;
+					}
+					else vp->v.v_long=0;
+					return ;
+				case type_float:
+					if (m_leng(vp->mode)) for(i=m_leng(vp->mode)-1;i>=0;i--)
+					{
+						((double *)(vp->v.v_void))[i]=0;
+					}
+					else vp->v.v_float=0;
+					return ;
+				case type_string:
+					if (m_leng(vp->mode)) for(i=m_leng(vp->mode)-1;i>=0;i--)
+					{
+						if (((char **)(vp->v.v_void))[i]) free(((char **)(vp->v.v_void))[i]);
+						((char **)(vp->v.v_void))[i]=NULL;
+					}
+					else
+					{
+						if (vp->v.v_string) free(vp->v.v_string);
+						vp->v.v_string=NULL;
+						vp->mode&=~free_need;
+					}
+					return ;
+				case type_object:
+					if (m_leng(vp->mode)) for(i=m_leng(vp->mode)-1;i>=0;i--)
+					{
+						var *vl;
+						if (((var **)(vp->v.v_void))[i])
+						{
+							var *vl,*vt;
+							for (vl=((var **)(vp->v.v_void))[i];vl->l;vl=vl->l);
+							while(vl)
+							{
+								vt=vl->r;
+								if (strcmp(vl->name,"set")==0||strcmp(vl->name,"unset")==0) ;
+								else ((var **)(vp->v.v_void))[i]=var_free(vl,vl->name);
+								vl=vt;
+							}
+						}
+					}
+					else
+					{
+						var *vl;
+						if (vp->v.v_object)
+						{
+							var *vl,*vt;
+							for (vl=vp->v.v_object;vl->l;vl=vl->l);
+							while(vl)
+							{
+								vt=vl->r;
+								if (strcmp(vl->name,"set")==0||strcmp(vl->name,"unset")==0) ;
+								else vp->v.v_object=var_free(vl,vl->name);
+								vl=vt;
+							}
+						}
+					}
+					return ;
+			}
 		}
-		else dp(".clear: 不能找到变量 %s\n");
+		else dp(".clear: 不能找到变量 %s\n",name);
 	}
 }
 
@@ -558,7 +793,7 @@ _fun(strcpy)
 		src=_string(vp);
 		if (name) get_var(name,&vp,&v);
 		else goto err;
-		if (m_leng(vp->mode)!=leng_no||m_type(vp->mode)!=type_string)
+		if (m_type2(vp->mode)!=type_string)
 		{
 			dp(".strcpy: 不能找到 string 类型的 %s 变量\n",name);
 			return ;
@@ -582,9 +817,10 @@ _fun(strcpy)
 				vp->mode&=~free_need;
 			}
 		}
+		*aim=NULL;
 		if (src) *aim=malloc(strlen(src)+1);
 		else return ;
-		if (vp->v.v_string)
+		if (*aim)
 		{
 			strcpy(*aim,src);
 			if (!m_poin(vp->mode)) vp->mode|=free_need;
@@ -594,6 +830,146 @@ _fun(strcpy)
 	}
 	err:
 	dp(".strcpy: 传递非法参数\n");
+}
+
+_fun(sprintf)
+{
+	va_list ap;
+	var *vp,v;
+	char *name,*src,**aim;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n<2) goto err;
+	while(vlist->l) vlist=vlist->l;
+	name=_string(vlist);
+	vlist=vlist->r;
+	src=_string(vlist);
+	if (name) get_var(name,&vp,&v);
+	else goto err;
+	if (m_type2(vp->mode)!=type_string)
+	{
+		dp(".sprintf: 不能找到 string 类型的 %s 变量\n",name);
+		return ;
+	}
+	else if (m_auth_rev(vp->mode))
+	{
+		dp(".sprintf: 无权修改变量 %s\n",name);
+		return ;
+	}
+	if (m_poin(vp->mode))
+	{
+		aim=(char**)vp->v.v_void;
+		if (*aim) free(*aim);
+	}
+	else
+	{
+		aim=&(vp->v.v_string);
+		if (m_free(vp->mode))
+		{
+			free(*aim);
+			vp->mode&=~free_need;
+		}
+	}
+	*aim=NULL;
+	if (src)
+	{
+		vlist=vlist->r;
+		vlist_set(&ap,vlist);
+		vsnprintf(funbuff,funbuff_size,src,ap);
+		if (src) *aim=malloc(strlen(src)+1);
+		else return ;
+		*aim=malloc(strlen(funbuff)+1);
+		if (*aim)
+		{
+			strcpy(*aim,funbuff);
+			if (!m_poin(vp->mode)) vp->mode|=free_need;
+		}
+		else dp(".sprintf: 申请字符串空间失败\n");
+		return ;
+	}
+	return ;
+	err:
+	dp(".sprintf: 传递非法参数\n");
+}
+
+_fun(strcmp)
+{
+	var *vp,v;
+	char *s1,*s2;
+	ret->mode=type_int;
+	ret->v.v_int=0;
+	if (n>1)
+	{
+		vp=argv(0);
+		s1=_string(vp);
+		vp=argv(1);
+		s2=_string(vp);
+		if (s1&&s2) ret->v.v_int=strcmp(s1,s2);
+		else if (s1) ret->v.v_int=s1[0];
+		else if (s2) ret->v.v_int=-s2[0];
+	}
+}
+
+_fun(strget)
+{
+	
+	var *vp,v;
+	char *name,**aim;
+	int i;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n>0)
+	{
+		vp=argv(0);
+		name=_string(vp);
+		if (name) get_var(name,&vp,&v);
+		else goto err;
+		if (m_type2(vp->mode)!=type_string)
+		{
+			dp(".strget: 不能找到 string 类型的 %s 变量\n",name);
+			return ;
+		}
+		else if (m_auth_rev(vp->mode))
+		{
+			dp(".strget: 无权修改变量 %s\n",name);
+			return ;
+		}
+		if (m_poin(vp->mode))
+		{
+			aim=(char**)vp->v.v_void;
+			if (*aim) free(*aim);
+		}
+		else
+		{
+			aim=&(vp->v.v_string);
+			if (m_free(vp->mode))
+			{
+				free(*aim);
+				vp->mode&=~free_need;
+			}
+		}
+		*aim=NULL;
+		for(i=0;i<funbuff_size;i++)
+		{
+			funbuff[i]=getchar();
+			if (funbuff[i]=='\n')
+			{
+				funbuff[i]=0;
+				break;
+			}
+		}
+		funbuff[funbuff_size-1]=0;
+		*aim=malloc(strlen(funbuff)+1);
+		if (*aim)
+		{
+			strcpy(*aim,funbuff);
+			if (!m_poin(vp->mode)) vp->mode|=free_need;
+		}
+		else dp(".strget: 申请字符串空间失败\n");
+		return ;
+	}
+	err:
+	dp(".strget: 传递非法参数\n");
 }
 
 // math fun
@@ -672,7 +1048,7 @@ _fun(cal)
 	if (n>0)
 	{
 		vp=argv(0);
-		if (m_leng(vp->mode)==leng_no&&m_type(vp->mode)==type_string)
+		if (m_type2(vp->mode)==type_string)
 		{
 			cal(vp->v.v_string,ret);
 			return ;
@@ -898,9 +1274,9 @@ _fun(po)
 	for(num=0;num<n;num++)
 	{
 		vp=argv(num);
-		if (m_leng(vp->mode)||m_type(vp->mode)!=type_object)
+		if (m_type2(vp->mode)!=type_object)
 		{
-			dp("%s 变量不是 object 类型\n",vp->name);
+			dp(".d.po: %s 变量不是 object 类型\n",vp->name);
 			break;
 		}
 		else varlist_print(vp->v.v_object);

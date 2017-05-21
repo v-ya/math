@@ -364,6 +364,39 @@ varmat* v_add(varmat *vm, varmat *vms)
 	return vm;
 }
 
+var* var_poin(var *vp, var *v)
+{
+	if (vp&&m_poin(vp->mode))
+	{
+		v->mode=m_type(vp->mode)|auth_noset;
+		switch(m_type(v->mode))
+		{
+			case type_void:
+				v->v.v_void=*((void**)(vp->v.v_void));
+				break;
+			case type_int:
+				v->v.v_int=*((int*)(vp->v.v_void));
+				break;
+			case type_long:
+				v->v.v_long=*((long*)(vp->v.v_void));
+				break;
+			case type_float:
+				v->v.v_float=*((float*)(vp->v.v_void));
+				break;
+			case type_string:
+				v->v.v_string=*((char**)(vp->v.v_void));
+				break;
+			case type_object:
+				v->v.v_object=*((var**)(vp->v.v_void));
+				break;
+			default:
+				v->v.v_void=NULL;
+		}
+		return v;
+	}
+	else return vp;
+}
+
 static char *_str_type[]={
 	"void",
 	"int",

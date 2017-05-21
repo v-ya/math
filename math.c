@@ -11,6 +11,8 @@ int glob_init(void)
 	#define	set_fun(f) v.v_void=&_func_##f;v_alloc(glob_vm,#f,type_void|auth_noset|auth_norev|func_code,&v)
 	set_fun(jdw);
 	set_fun(jup);
+	set_fun(ldw_test);
+	set_fun(lup_test);
 	set_fun(calldw);
 	set_fun(callup);
 	set_fun(ret);
@@ -20,8 +22,12 @@ int glob_init(void)
 	set_fun(set);
 	set_fun(unset);
 	// other
+	set_fun(test);
 	set_fun(clear);
 	set_fun(strcpy);
+	set_fun(sprintf);
+	set_fun(strcmp);
+	set_fun(strget);
 	
 	// math fun
 	set_fun(int);
@@ -78,7 +84,6 @@ int glob_init(void)
 	// import
 	vp=v_alloc(glob_vm,"import",type_object|auth_noset|auth_norev,NULL);
 	set_fun(calc_init);
-	set_fun(calc_free);
 	
 	vp=v_alloc(glob_vm,"d",type_object|auth_noset|auth_norev,NULL);
 	set_fun(pv);
@@ -594,9 +599,6 @@ int math_run(char *exp, char *lab, int is_vmres, var *vlist)
 						break;
 					case type_long:
 						*__ret=vl->v.v_long;
-						break;
-					case type_float:
-						*__ret=(vl->v.v_float==0)?0:1;
 						break;
 					case type_string:
 					case type_object:

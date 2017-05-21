@@ -1,6 +1,10 @@
 #ifndef	_fun_h_
 #define	_fun_h_
 
+#define	funbuff_size 4096
+extern char funbuff[funbuff_size];
+void vlist_set(va_list *, var *);
+
 // return, call_var, varnumber, varlist
 typedef void (*func) (char **, var *, var *, int, var *);
 
@@ -15,6 +19,8 @@ double _float(var *);
 // sys
 _fun(jdw);
 _fun(jup);
+_fun(ldw_test);
+_fun(lup_test);
 _fun(calldw);
 _fun(callup);
 _fun(ret);
@@ -25,8 +31,12 @@ _fun(set);
 _fun(unset);
 
 // other
+_fun(test);
 _fun(clear);
 _fun(strcpy);
+_fun(sprintf);
+_fun(strcmp);
+_fun(strget);
 
 // math
 _fun(int);

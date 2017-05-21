@@ -14,6 +14,8 @@ _fun(calc_init)
 	var *vp,*vl;
 	ret->mode=type_void;
 	ret->v.v_void=NULL;
+	vp=v_find(glob_vm,"calc");
+	if (vp) return ;
 	vp=v_alloc(glob_vm,"calc",type_object|auth_noset|auth_norev,NULL);
 	if (!vp) goto err;
 	#define	set_fun(f) v.v_void=&_func_##f;vl=var_alloc((var*)vp->v.v_void,#f,type_void|auth_noset|auth_norev|func_code,&v);\
@@ -34,6 +36,10 @@ _fun(calc_init)
 	set_fun(inte);
 	set_fun(inteq);
 	set_fun(solv);
+	
+	vp=v_find(glob_vm,"import");
+	if (!vp) goto err;
+	set_fun(calc_free);
 	#undef	set_fun
 	#undef	set_var
 	return ;
@@ -46,9 +52,12 @@ _fun(calc_init)
 
 _fun(calc_free)
 {
+	var *vp;
 	ret->mode=type_void;
 	ret->v.v_void=NULL;
 	v_free(glob_vm,"calc");
+	vp=v_find(glob_vm,"import");
+	if (vp) vp->v.v_object=var_free(vp->v.v_object,"calc_free");
 }
 
 double _calc_diff(char *exp, var *vp)
@@ -116,7 +125,7 @@ _fun(diff)
 		if (exp==NULL||name==NULL) goto err;
 		get_var(name,&vp,&v);
 		if (!vp) goto err;
-		if (m_leng(vp->mode)!=leng_no||m_type(vp->mode)!=type_float) goto err;
+		if (m_type3(vp->mode)!=type_float) goto err;
 		x=vp->v.v_float;
 		if (n>2) vp->v.v_float=_float(argv(2));
 		ret->v.v_float=_calc_diff(exp,vp);
@@ -143,7 +152,7 @@ _fun(diffq)
 		if (exp==NULL||name==NULL) goto err;
 		get_var(name,&vp,&v);
 		if (!vp) goto err;
-		if (m_leng(vp->mode)!=leng_no||m_type(vp->mode)!=type_float) goto err;
+		if (m_type3(vp->mode)!=type_float) goto err;
 		x=vp->v.v_float;
 		if (n>2) vp->v.v_float=_float(argv(2));
 		ret->v.v_float=_calc_diffq(exp,vp);
@@ -1078,9 +1087,8 @@ char* _calc_diffs(char *s, int *err)
 		next:
 		while(is_space(*s)) s++;
 	}
-	sl=_calc_diffs_restr(y1,err);
-	if (*err==-1) goto err;
-	if (y1) free(y1);
+	sl=y1;
+	y1=NULL;
 	if (y2) free(y2);
 	if (s1) free(s1);
 	if (s2) free(s2);
@@ -1111,7 +1119,7 @@ _fun(diffs)
 		x=_string(vp);
 		if (name) get_var(name,&vp,&v);
 		else goto err;
-		if (m_leng(vp->mode)!=leng_no||m_type(vp->mode)!=type_string)
+		if (m_type3(vp->mode)!=type_string)
 		{
 			dp(".calc.diffs: 不能找到 string 类型的 %s 变量\n",name);
 			goto end;
@@ -1215,7 +1223,7 @@ _fun(inte)
 		if (exp==NULL||name==NULL) goto err;
 		get_var(name,&vp,&v);
 		if (!vp) goto err;
-		if (m_leng(vp->mode)!=leng_no||m_type(vp->mode)!=type_float) goto err;
+		if (m_type3(vp->mode)!=type_float) goto err;
 		x=vp->v.v_float;
 		if (n>3)
 		{
@@ -1247,7 +1255,7 @@ _fun(inteq)
 		if (exp==NULL||name==NULL) goto err;
 		get_var(name,&vp,&v);
 		if (!vp) goto err;
-		if (m_leng(vp->mode)!=leng_no||m_type(vp->mode)!=type_float) goto err;
+		if (m_type3(vp->mode)!=type_float) goto err;
 		x=vp->v.v_float;
 		if (n>3)
 		{
@@ -1298,7 +1306,7 @@ _fun(solv)
 		if (exp==NULL||name==NULL) goto err;
 		get_var(name,&vp,&v);
 		if (!vp) goto err;
-		if (m_leng(vp->mode)!=leng_no||m_type(vp->mode)!=type_float) goto err;
+		if (m_type3(vp->mode)!=type_float) goto err;
 		x=vp->v.v_float;
 		if (n>2) vp->v.v_float=_float(argv(2));
 		ret->v.v_float=_calc_solv(exp,vp);
