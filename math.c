@@ -84,6 +84,7 @@ int glob_init(void)
 	// import
 	vp=v_alloc(glob_vm,"import",type_object|auth_noset|auth_norev,NULL);
 	set_fun(calc_init);
+	set_fun(bmp_init);
 	
 	vp=v_alloc(glob_vm,"d",type_object|auth_noset|auth_norev,NULL);
 	set_fun(pv);

@@ -3,12 +3,18 @@
 * See test.txt for detailed usage.
 ---
 ### 预计更新
-* 新加分项 Bpm
+* 完善分项 Bpm
 * 完成 main.c main() "-var"
 * 实现脚本传参
 * 新加分项 Mat
 * 外置模块加载功能
 * ...
+---
+### v1.0.2 2017.05.23
+* 新增分项 Bmp
+* Add item Bmp
+* 新加 .bmp.{new write setcolor pset padd setalpha fset fadd fill blockset blockadd}()
+* New .bmp.{new write setcolor pset padd setalpha fset fadd fill blockset blockadd}()
 ---
 ### v1.0.1 2017.05.21
 * 修复 object.set() 权限问题

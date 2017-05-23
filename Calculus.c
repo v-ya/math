@@ -18,7 +18,7 @@ _fun(calc_init)
 	if (vp) return ;
 	vp=v_alloc(glob_vm,"calc",type_object|auth_noset|auth_norev,NULL);
 	if (!vp) goto err;
-	#define	set_fun(f) v.v_void=&_func_##f;vl=var_alloc((var*)vp->v.v_void,#f,type_void|auth_noset|auth_norev|func_code,&v);\
+	#define	set_fun(f) v.v_void=&_func_calc_##f;vl=var_alloc((var*)vp->v.v_void,#f,type_void|auth_noset|auth_norev|func_code,&v);\
 		if (vl) vp->v.v_void=vl;else goto err;
 	#define	set_var(n,t,_v) v.v_##t=_v;vl=var_alloc((var*)vp->v.v_void,#n,type_##t|auth_noset,&v);\
 		if (vl) vp->v.v_void=vl;else goto err;
@@ -50,7 +50,7 @@ _fun(calc_init)
 	return ;
 }
 
-_fun(calc_free)
+_fun_calc(calc_free)
 {
 	var *vp;
 	ret->mode=type_void;
@@ -58,6 +58,10 @@ _fun(calc_free)
 	v_free(glob_vm,"calc");
 	vp=v_find(glob_vm,"import");
 	if (vp) vp->v.v_object=var_free(vp->v.v_object,"calc_free");
+	_acc=NULL;
+	_inn=NULL;
+	_solv_in=NULL;
+	_solv_ac=NULL;
 }
 
 double _calc_diff(char *exp, var *vp)
@@ -109,7 +113,7 @@ double _calc_diffq(char *exp, var *vp)
 	return r;
 }
 
-_fun(diff)
+_fun_calc(diff)
 {
 	var *vp,v;
 	char *exp,*name;
@@ -136,7 +140,7 @@ _fun(diff)
 	dp(".calc.diff: 传入参数错误\n");
 }
 
-_fun(diffq)
+_fun_calc(diffq)
 {
 	var *vp,v;
 	char *exp,*name;
@@ -1102,7 +1106,7 @@ char* _calc_diffs(char *s, int *err)
 	return NULL;
 }
 
-_fun(diffs)
+_fun_calc(diffs)
 {
 	var *vp,v;
 	char *name,*src;
@@ -1207,7 +1211,7 @@ double _calc_inteq(char *exp, var *vp, double fe)
 	return s;
 }
 
-_fun(inte)
+_fun_calc(inte)
 {
 	var *vp,v;
 	char *exp,*name;
@@ -1239,7 +1243,7 @@ _fun(inte)
 }
 
 
-_fun(inteq)
+_fun_calc(inteq)
 {
 	var *vp,v;
 	char *exp,*name;
@@ -1290,7 +1294,7 @@ double _calc_solv(char *exp, var *vp)
 	return vp->v.v_float;
 }
 
-_fun(solv)
+_fun_calc(solv)
 {
 	var *vp,v;
 	char *exp,*name;

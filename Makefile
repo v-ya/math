@@ -1,4 +1,4 @@
-obj	= main.o debug.o string.o var.o fun.o math.o Calculus.o
+obj	= main.o debug.o string.o var.o fun.o math.o Calculus.o Bmp.o
 
 math: ${obj}
 	gcc ${obj} -lm -o $@

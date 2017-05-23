@@ -4,6 +4,9 @@
 #define	funbuff_size 4096
 extern char funbuff[funbuff_size];
 void vlist_set(va_list *, var *);
+int is_obj(var *);
+int obj_type(var *, char *, char *);
+int is_obj_type(var *, char *, char *);
 
 // return, call_var, varnumber, varlist
 typedef void (*func) (char **, var *, var *, int, var *);

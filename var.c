@@ -218,6 +218,13 @@ var* var_alloc(var *vl, char *name, unsigned int mode, value *vp)
 	return v;
 }
 
+var* var_ralloc(var *vl, char *name, unsigned int mode, value *vp)
+{
+	if (!vl) return NULL;
+	vl=var_free(vl,name);
+	return var_alloc(vl,name,mode,vp);
+}
+
 var* var_find(var *vl, char *name)
 {
 	int i,turn=1;

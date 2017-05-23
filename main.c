@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 					"\t.if(:i<100); .jup(\"loop\");\n"
 					"\t.echo(\"1+2+...+100=%%d\\;\\n\",n);\n"
 					"\t.exit(0);\n"
-					"math v1.0.0 from vya\n"
+					"math v1.0.2 from vya\n"
 				);
 				return 0;
 			}

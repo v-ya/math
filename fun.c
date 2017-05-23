@@ -45,6 +45,34 @@ void vlist_set(va_list *ap, var *vlist)
 	#endif
 }
 
+int is_obj(var *obj)
+{
+	if ((!obj)||m_type2(obj->mode)!=type_object) return 0;
+	if (m_auth_rev(obj->mode)) return 0;
+	if (!obj->v.v_object) return 0;
+	return 1;
+}
+
+int obj_type(var *obj, char *name, char *value)
+{
+	var *vp;
+	if ((!obj)||m_type2(obj->mode)!=type_object) return -1;
+	vp=var_ralloc(obj->v.v_object,name,type_string|auth_noset|auth_norev,NULL);
+	if (!vp) return -1;
+	vp->v.v_string=value;
+	return 0;
+}
+
+int is_obj_type(var *obj, char *name, char *value)
+{
+	var *vp;
+	if ((!obj)||m_type2(obj->mode)!=type_object) return 0;
+	vp=var_find(obj->v.v_object,name);
+	if (!vp) return 0;
+	if (strcmp(vp->v.v_string,value)==0) return 1;
+	return 0;
+}
+
 #define	argv(argc) var_find(vlist,spget("_",argc))
 
 int _int(var *vp)
@@ -472,8 +500,8 @@ _fun(set)
 		}
 		if (call)
 		{
-			vp=var_find(call->v.v_object,name);
 			if (m_auth_rev(call->mode)) goto err_auth;
+			vp=var_find(call->v.v_object,name);
 			if (vp)
 			{
 				if (m_auth_set(vp->mode))
@@ -533,10 +561,11 @@ _fun(unset)
 		name=vlist->v.v_string;
 		if (call)
 		{
+			if (m_auth_rev(call->mode)) goto err_auth;
 			vp=var_find(call->v.v_object,name);
 			if (vp)
 			{
-				if (m_auth_set(vp->mode)||m_auth_set(call->mode))
+				if (m_auth_set(vp->mode))
 				{
 					err_auth:
 					dp(".unset: 无权释放变量 %s\n",name);

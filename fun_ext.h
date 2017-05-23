@@ -3,8 +3,8 @@
 
 // Calculus 微积分 扩展
 _fun(calc_init);
-_fun(calc_free);
-
+// Bmp 位图 扩展
+_fun(bmp_init);
 
 #endif
 

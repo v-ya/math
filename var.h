@@ -71,6 +71,7 @@ void varmat_free(varmat *);
 int varmat_ngen(char *);
 void value_free(var *);
 var* var_alloc(var *, char *, unsigned int, value *);
+var* var_ralloc(var *, char *, unsigned int, value *);
 var* var_find(var *, char *);
 var* var_free(var *, char *);
 void var_listfree(var *);
