@@ -129,14 +129,16 @@ _fun(jdw)
 		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
-	if (!lab) goto end;
-	else if (lab[0]==0) goto end;
+	if (!lab) goto err;
+	else if (lab[0]==0) goto err;
 	while(*s)
 	{
 		while(*s&&*s!='\n') s++;
 		if (*s) s++;
 		if (*s=='#'&&scmp(s+1,lab)) goto end;
 	}
+	err:
+	ret->mode=type_err;
 	dp(".jdw 不能找到标签 %s\n",lab);
 	return ;
 	end:
@@ -153,7 +155,7 @@ _fun(jup)
 	if (!vp)
 	{
 		dp(".jup: 不能找到预设变量 _start\n");
-		goto end;
+		goto err;
 	}
 	start=(char*)vp->v.v_void;
 	if (n>0)
@@ -162,8 +164,8 @@ _fun(jup)
 		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
-	if (!lab) goto end;
-	else if (lab[0]==0) goto end;
+	if (!lab) goto err;
+	else if (lab[0]==0) goto err;
 	while(s>start)
 	{
 		while(s>start&&*s!='\n') s--;
@@ -172,6 +174,8 @@ _fun(jup)
 		if (s>start&&*(s-1)=='\n') s--;
 		if (s>start&&*s=='\n') s--;
 	}
+	err:
+	ret->mode=type_err;
 	dp(".jup 不能找到标签 %s\n",lab);
 	return ;
 	end:
@@ -213,6 +217,7 @@ _fun(lup_test)
 	if (!vp)
 	{
 		dp(".jup: 不能找到预设变量 _start\n");
+		ret->mode=type_err;
 		return ;
 	}
 	start=(char*)vp->v.v_void;
@@ -248,6 +253,7 @@ _fun(calldw)
 	if (!vp)
 	{
 		dp(".calldw: 不能找到预设变量 _sp\n");
+		ret->mode=type_err;
 		return ;
 	}
 	sp=&(vp->v.v_int);
@@ -258,6 +264,7 @@ _fun(calldw)
 	else
 	{
 		dp(".calldw: 不能设置变量 %s\n",lab);
+		ret->mode=type_err;
 		return ;
 	}
 	s=*exps;
@@ -268,14 +275,17 @@ _fun(calldw)
 		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
-	if (!lab) goto end;
-	else if (lab[0]==0) goto end;
+	if (!lab) goto err;
+	else if (lab[0]==0) goto err;
 	while(*s)
 	{
 		while(*s&&*s!='\n') s++;
 		if (*s) s++;
 		if (*s=='#'&&scmp(s+1,lab)) goto end;
 	}
+	err:
+	ret->mode=type_err;
+	return ;
 	end:
 	*exps=s;
 }
@@ -291,6 +301,7 @@ _fun(callup)
 	if (!vp)
 	{
 		dp(".callup: 不能找到预设变量 _sp\n");
+		ret->mode=type_err;
 		return ;
 	}
 	sp=&(vp->v.v_int);
@@ -301,6 +312,7 @@ _fun(callup)
 	else
 	{
 		dp(".callup: 不能设置变量 %s\n",lab);
+		ret->mode=type_err;
 		return ;
 	}
 	s=*exps;
@@ -309,7 +321,8 @@ _fun(callup)
 	if (!vp)
 	{
 		dp(".callup: 不能找到预设变量 _start\n");
-		goto end;
+		ret->mode=type_err;
+		return ;
 	}
 	start=(char*)vp->v.v_void;
 	if (n>0)
@@ -318,8 +331,8 @@ _fun(callup)
 		if (m_type2(vp->mode)==type_string)
 		lab=vp->v.v_string;
 	}
-	if (!lab) goto end;
-	else if (lab[0]==0) goto end;
+	if (!lab) goto err;
+	else if (lab[0]==0) goto err;
 	while(s>start)
 	{
 		while(s>start&&*s!='\n') s--;
@@ -328,6 +341,9 @@ _fun(callup)
 		if (s>start&&*(s-1)=='\n') s--;
 		if (s>start&&*s=='\n') s--;
 	}
+	err:
+	ret->mode=type_err;
+	return ;
 	end:
 	*exps=s;
 }
@@ -351,12 +367,14 @@ _fun(ret)
 	if (!vp)
 	{
 		dp(".ret: 不能找到预设变量 _sp\n");
+		ret->mode=type_err;
 		return ;
 	}
 	sp=&(vp->v.v_int);
 	if (*sp<=0)
 	{
 		dp(".ret: _sp 不符合条件 (_sp = %d)\n",*sp);
+		ret->mode=type_err;
 		return ;
 	}
 	(*sp)--;
@@ -371,6 +389,7 @@ _fun(ret)
 	else
 	{
 		dp(".ret: 不能找到变量 %s\n",lab);
+		ret->mode=type_err;
 		return ;
 	}
 }
@@ -428,6 +447,7 @@ _fun(echo)
 	if (m_type2(vlist->mode)!=type_string)
 	{
 		dp("echo: %s 不是 string 类型\n",vlist->name);
+		ret->mode=type_err;
 		return ;
 	}
 	s=vlist->v.v_string;
@@ -450,6 +470,7 @@ _fun(set)
 		if (m_type2(call->mode)!=type_object)
 		{
 			dp(".set: %s 变量不是 object 类型\n",call->name);
+			ret->mode=type_err;
 			return ;
 		}
 	}
@@ -547,6 +568,7 @@ _fun(unset)
 		if (m_type2(call->mode)!=type_object)
 		{
 			dp(".unset: %s 变量不是 object 类型\n",call->name);
+			ret->mode=type_err;
 			return ;
 		}
 	}
@@ -825,11 +847,13 @@ _fun(strcpy)
 		if (m_type2(vp->mode)!=type_string)
 		{
 			dp(".strcpy: 不能找到 string 类型的 %s 变量\n",name);
+			ret->mode=type_err;
 			return ;
 		}
 		else if (m_auth_rev(vp->mode))
 		{
 			dp(".strcpy: 无权修改变量 %s\n",name);
+			ret->mode=type_err;
 			return ;
 		}
 		if (m_poin(vp->mode))
@@ -854,10 +878,15 @@ _fun(strcpy)
 			strcpy(*aim,src);
 			if (!m_poin(vp->mode)) vp->mode|=free_need;
 		}
-		else dp(".strcpy: 申请字符串空间失败\n");
+		else
+		{
+			ret->mode=type_err;
+			dp(".strcpy: 申请字符串空间失败\n");
+		}
 		return ;
 	}
 	err:
+	ret->mode=type_err;
 	dp(".strcpy: 传递非法参数\n");
 }
 
@@ -878,11 +907,13 @@ _fun(sprintf)
 	if (m_type2(vp->mode)!=type_string)
 	{
 		dp(".sprintf: 不能找到 string 类型的 %s 变量\n",name);
+		ret->mode=type_err;
 		return ;
 	}
 	else if (m_auth_rev(vp->mode))
 	{
 		dp(".sprintf: 无权修改变量 %s\n",name);
+		ret->mode=type_err;
 		return ;
 	}
 	if (m_poin(vp->mode))
@@ -913,11 +944,16 @@ _fun(sprintf)
 			strcpy(*aim,funbuff);
 			if (!m_poin(vp->mode)) vp->mode|=free_need;
 		}
-		else dp(".sprintf: 申请字符串空间失败\n");
+		else
+		{
+			ret->mode=type_err;
+			dp(".sprintf: 申请字符串空间失败\n");
+		}
 		return ;
 	}
 	return ;
 	err:
+	ret->mode=type_err;
 	dp(".sprintf: 传递非法参数\n");
 }
 
@@ -956,11 +992,13 @@ _fun(strget)
 		if (m_type2(vp->mode)!=type_string)
 		{
 			dp(".strget: 不能找到 string 类型的 %s 变量\n",name);
+			ret->mode=type_err;
 			return ;
 		}
 		else if (m_auth_rev(vp->mode))
 		{
 			dp(".strget: 无权修改变量 %s\n",name);
+			ret->mode=type_err;
 			return ;
 		}
 		if (m_poin(vp->mode))
@@ -994,10 +1032,15 @@ _fun(strget)
 			strcpy(*aim,funbuff);
 			if (!m_poin(vp->mode)) vp->mode|=free_need;
 		}
-		else dp(".strget: 申请字符串空间失败\n");
+		else
+		{
+			ret->mode=type_err;
+			dp(".strget: 申请字符串空间失败\n");
+		}
 		return ;
 	}
 	err:
+	ret->mode=type_err;
 	dp(".strget: 传递非法参数\n");
 }
 

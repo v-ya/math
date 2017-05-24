@@ -1,6 +1,5 @@
 #include "math.h"
 
-
 char* get_exp(char *path)
 {
 	FILE *fp=fopen(path,"r");
@@ -116,7 +115,7 @@ int main(int argc, char *argv[])
 					"\t.if(:i<100); .jup(\"loop\");\n"
 					"\t.echo(\"1+2+...+100=%%d\\;\\n\",n);\n"
 					"\t.exit(0);\n"
-					"math v1.0.2 from vya\n"
+					"math " VERSION " from vya\n"
 				);
 				return 0;
 			}

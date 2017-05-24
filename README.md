@@ -10,6 +10,12 @@
 * 外置模块加载功能
 * ...
 ---
+### v1.0.3 2017.05.24
+* 修订系统函数报错处理
+* Revised system function error processing
+* 增加非正常结束时脚本的行号显示
+* Increase the line number of the script at the end of the nonstandard
+---
 ### v1.0.2 2017.05.23
 * 新增分项 Bmp
 * Add item Bmp

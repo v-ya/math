@@ -566,7 +566,7 @@ int math_run(char *exp, char *lab, int is_vmres, var *vlist)
 	// 开始执行
 	while(*exp)
 	{
-		while(is_space(*exp)) exp++;
+		while(is_space(*exp)||*exp==';') exp++;
 		switch(*exp)
 		{
 			case '#':
@@ -581,6 +581,7 @@ int math_run(char *exp, char *lab, int is_vmres, var *vlist)
 			default:
 				if (!is_Name(*exp))
 				{
+					if (*exp==0) goto end;
 					dp("math_run: 非法字符 \'%c\'(%d)\n",*exp,*exp);
 					goto err;
 				}
@@ -611,7 +612,19 @@ int math_run(char *exp, char *lab, int is_vmres, var *vlist)
 	}
 	goto end;
 	err:
-	dp("math_run: 发现一些错误，运行终止\n");
+	_ret=1;
+	if (*exp==0) exp--;
+	while(is_space(*exp)||*exp==';') exp--;
+	vl=v_find(math_vm,"_start");
+	if (vl&&vl->v.v_string)
+	{
+		lab=vl->v.v_string;
+		for(;exp>=lab;exp--)
+		{
+			if (*exp=='\n') _ret++;
+		}
+	}
+	dp("math_run: 发现一些错误，运行终止于 %d 行\n",_ret);
 	*__ret=-1;
 	end:
 	_ret=*__ret;
