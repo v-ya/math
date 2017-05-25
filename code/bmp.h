@@ -8,33 +8,6 @@ int *pWidth;
 int *pHeight;
 unsigned int *pColor;
 
-typedef struct __attribute__ ((packed)) S_bmp_hi {
-	// head
-	char bfTyte[2];
-	unsigned int bfSize;
-	unsigned int bfRes;
-	unsigned int bfOffset;
-	// info
-	unsigned int biSize;
-	signed int biWidth;
-	signed int biHeight;
-	unsigned short biPlanes;
-	unsigned short biBitCounts;
-	unsigned int biCompression;
-	unsigned int biSizeImage;
-	signed int biXPelsPerMeter;
-	signed int biYPelsPerMeter;
-	unsigned int biClrUsed;
-	unsigned int biClrImportant;
-} Bmp_hi;
-
-typedef struct S_bmp {
-	struct S_bmp_hi hi;
-	unsigned int width;
-	unsigned int height;
-	unsigned int *data;
-} Bmp;
-
 Bmp* Bmp_new(signed int width, signed int height)
 {
 	Bmp *bmp;
@@ -154,12 +127,6 @@ void Bmp_set_alpha(Bmp *bmp, unsigned int alpha)
 		}
 	}
 }
-
-typedef struct S_pxy {
-	unsigned int x;
-	unsigned int y;
-	struct S_pxy *next;
-} Pxy;
 
 static Pxy *pxy=NULL;
 
@@ -326,3 +293,4 @@ void Bmp_block_add(Bmp *bmp, Bmp *bmp2, unsigned int w, unsigned int h)
 }
 
 #endif
+
