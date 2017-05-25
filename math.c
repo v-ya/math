@@ -85,6 +85,7 @@ int glob_init(void)
 	vp=v_alloc(glob_vm,"import",type_object|auth_noset|auth_norev,NULL);
 	set_fun(calc_init);
 	set_fun(bmp_init);
+	set_fun(wav_init);
 	
 	vp=v_alloc(glob_vm,"d",type_object|auth_noset|auth_norev,NULL);
 	set_fun(pv);
@@ -147,10 +148,10 @@ char* get_varlist(char *exp, int *n, var **vl)
 					v.v.v_int=*((int*)(vp->v.v_void));
 					break;
 				case type_long:
-					v.v.v_long=*((long*)(vp->v.v_void));
+					v.v.v_long=*((long long*)(vp->v.v_void));
 					break;
 				case type_float:
-					v.v.v_float=*((float*)(vp->v.v_void));
+					v.v.v_float=*((double*)(vp->v.v_void));
 					break;
 				case type_string:
 					v.v.v_string=*((char**)(vp->v.v_void));
@@ -288,10 +289,10 @@ char* get_var(char *exp, var **vp, var *v)
 				v->v.v_void=(void*)(((int*)(v->v.v_void))+px);
 				break;
 			case type_long:
-				v->v.v_void=(void*)(((long*)(v->v.v_void))+px);
+				v->v.v_void=(void*)(((long long*)(v->v.v_void))+px);
 				break;
 			case type_float:
-				v->v.v_void=(void*)(((float*)(v->v.v_void))+px);
+				v->v.v_void=(void*)(((double*)(v->v.v_void))+px);
 				break;
 			case type_string:
 				v->v.v_void=(void*)(((char**)(v->v.v_void))+px);

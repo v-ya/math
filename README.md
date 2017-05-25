@@ -10,6 +10,12 @@
 * 外置模块加载功能
 * ...
 ---
+### v1.0.4 2017.05.25
+* 修复部分浮点数("float":double)传参错误
+* Fix some floating point("float":double) passer errors
+* 新增分项 Wav
+* Add item Wav
+---
 ### v1.0.3 2017.05.24
 * 修订系统函数报错处理
 * Revised system function error processing

@@ -1,9 +1,9 @@
-obj	= main.o debug.o string.o var.o fun.o math.o Calculus.o Bmp.o
+obj	= main.o debug.o string.o var.o fun.o math.o Calculus.o Bmp.o Wav.o
 
 math: ${obj}
 	gcc ${obj} -lm -o $@
 run: math
-	./math test.txt
+	./math test.math
 clear:
 	rm -f *.o math
 

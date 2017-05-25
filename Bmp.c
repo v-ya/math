@@ -1,5 +1,6 @@
 #include "math.h"
 #include "Bmp.h"
+#include "code/bmp_h.h"
 #include "code/bmp.h"
 
 #define	argv(argc) var_find(vlist,spget("_",argc))
@@ -45,7 +46,7 @@ _fun(bmp_init)
 	#undef	set_var
 	return ;
 	err:
-	dp("bmp_init: calc 初始化失败\n");
+	dp("bmp_init: bmp 初始化失败\n");
 	v_free(glob_vm,"bmp");
 	ret->mode=type_err;
 	return ;
