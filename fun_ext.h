@@ -7,6 +7,8 @@ _fun(calc_init);
 _fun(bmp_init);
 // Wav 音频 扩展
 _fun(wav_init);
+// Avi 视频 扩展
+_fun(avi_init);
 
 #endif
 

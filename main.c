@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 					"\t:[object].unset(\"name1\", \"name2\", ...);\n"
 					"calculate expression:\n"
 					"\t:begin at : and end at ;\n"
-					"\t:Operator: :,(,),+,-,*,/,=,>,<.&,|,!,@\n"
+					"\t:Operator: :,(,),+,-,*,/,=,!=,>,>=,<,<=,&,|,!,@,?,$\n"
 					"define label:\n"
 					"\t:The #label at start of one line will become label or note\n"
 					".d.pg, .d.pv, .d.po:\n"

@@ -69,7 +69,7 @@ int is_obj_type(var *obj, char *name, char *value)
 	if ((!obj)||m_type2(obj->mode)!=type_object) return 0;
 	vp=var_find(obj->v.v_object,name);
 	if (!vp) return 0;
-	if (strcmp(vp->v.v_string,value)==0) return 1;
+	if (vp->v.v_string&&strcmp(vp->v.v_string,value)==0) return 1;
 	return 0;
 }
 
@@ -460,11 +460,12 @@ _fun(echo)
 
 _fun(set)
 {
-	char *s,*name;
+	char *s,name[32];
 	int mode;
 	var *vp;
 	ret->mode=type_void;
 	ret->v.v_void=NULL;
+	if (n==0) return ;
 	if (call)
 	{
 		if (m_type2(call->mode)!=type_object)
@@ -479,7 +480,7 @@ _fun(set)
 	{
 		if (m_type2(vlist->mode)!=type_string)
 		{
-			dp(".set: %s 变量不是 string 类型\n");
+			dp(".set: %s 变量不是 string 类型\n",vlist->name);
 			continue;
 		}
 		s=vlist->v.v_string;
@@ -500,7 +501,7 @@ _fun(set)
 			continue;
 		}
 		s++;
-		name=sget(s);
+		strcpy(name,sget(s));
 		s=sskip(s);
 		if (name[0]==0)
 		{
@@ -516,8 +517,7 @@ _fun(set)
 		{
 			var vn;
 			cal(s,&vn);
-			if (vn.mode==type_float)
-			mode|=((int)vn.v.v_float)<<16;
+			if (vn.v.v_float>0) mode|=((int)vn.v.v_float)<<16;
 		}
 		if (call)
 		{
@@ -563,6 +563,7 @@ _fun(unset)
 	var *vp;
 	ret->mode=type_void;
 	ret->v.v_void=NULL;
+	if (n==0) return ;
 	if (call)
 	{
 		if (m_type2(call->mode)!=type_object)
@@ -577,7 +578,7 @@ _fun(unset)
 	{
 		if (m_type2(vlist->mode)!=type_string)
 		{
-			dp(".unset: %s 变量不是 string 类型\n");
+			dp(".unset: %s 变量不是 string 类型\n",vlist->name);
 			continue;
 		}
 		name=vlist->v.v_string;
@@ -605,6 +606,132 @@ _fun(unset)
 				else v_free(math_vm,name);
 			}
 		}
+	}
+}
+
+_fun(func)
+{
+	char *s,*sb,*code,name[32];
+	int mode;
+	var *vp;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n==0) return ;
+	while(vlist->l) vlist=vlist->l;
+	if (m_type2(vlist->mode)!=type_string)
+	{
+		dp(".func: %s 变量不是 string 类型\n",vlist->name);
+		ret->mode=type_err;
+		return ;
+	}
+	s=vlist->v.v_string;
+	if (scmp_skip(&s,"void")) mode=type_void;
+	else if (scmp_skip(&s,"int")) mode=type_int;
+	else if (scmp_skip(&s,"long")) mode=type_long;
+	else if (scmp_skip(&s,"float")) mode=type_float;
+	else if (scmp_skip(&s,"string")) mode=type_string;
+	else if (scmp_skip(&s,"object")) mode=type_object;
+	else
+	{
+		dp(".func: 未识别类型 %s\n",sget(s));
+		ret->mode=type_err;
+		return ;
+	}
+	if (*s!=':')
+	{
+		dp(".func: 未找到分隔符 \':\'\n");
+		ret->mode=type_err;
+		return ;
+	}
+	s++;
+	strcpy(name,sget(s));
+	s=sskip(s);
+	if (name[0]==0)
+	{
+		dp(".func: 未找到合法名称\n");
+		ret->mode=type_err;
+		return ;
+	}
+	if (strlen(name)>=12)
+	{
+		dp(".func: 变量名 %s 过长(超过 11 字节)\n",name);
+		ret->mode=type_err;
+		return ;
+	}
+	if (*s=='[')
+	{
+		var vn;
+		cal(s,&vn);
+		if (vn.v.v_float>0) mode|=((int)vn.v.v_float)<<16;
+	}
+	vp=v_find(math_vm,name);
+	if (vp)
+	{
+		if (m_auth_set(vp->mode))
+		{
+			dp(".func: 无权申请变量 %s\n",name);
+			ret->mode=type_err;
+			return ;
+		}
+		else v_free(math_vm,name);
+	}
+	vp=v_alloc(math_vm,name,type_object|func_code,NULL);
+	call=NULL;
+	if (!vp)
+	{
+		err_alloc:
+		if (call) v_free(math_vm,name);
+		dp(".func: 申请变量 %s 失败\n",name);
+		ret->mode=type_err;
+		return ;
+	}
+	call=vp;
+	vp=var_alloc(call->v.v_object,"ret",mode|auth_noset,NULL);
+	if (!vp) goto err_alloc;
+	vp=var_alloc(call->v.v_object,"argc",type_int|auth_noset,NULL);
+	if (!vp) goto err_alloc;
+	vp=var_alloc(call->v.v_object,"argv",type_void,NULL);
+	if (!vp) goto err_alloc;
+	vp->mode=type_object|auth_noset|auth_norev;
+	vp=var_alloc(call->v.v_object,"code",type_void|auth_noset|auth_norev,NULL);
+	if (!vp) goto err_alloc;
+	s=*exps;
+	while(is_space(*s)) s++;
+	if (*s==';') s++;
+	while(is_space(*s)) s++;
+	if (*s=='{')
+	{
+		*s='#';
+		s++;
+		sb=s;
+		mode=1;
+		while(*s&&mode>0)
+		{
+			if (*s=='\"') s=str_skip(s);
+			else if (*s=='{')
+			{
+				mode++;
+				s++;
+			}
+			else if (*s=='}')
+			{
+				mode--;
+				if (mode>0) s++;
+			}
+			else s++;
+		}
+		if (*s=='}') *s='\n';
+		code=malloc(s-sb+1);
+		if (!code) goto err_alloc;
+		vp->v.v_void=code;
+		vp->mode|=free_need;
+		while(sb<s)
+		{
+			*(code++)=*sb;
+			if (*sb=='\n') *sb=' ';
+			sb++;
+		}
+		*code=0;
 	}
 }
 
@@ -1131,6 +1258,24 @@ _fun(cal)
 	dp(".cal: 传入参数错误\n");
 }
 
+_fun(srand)
+{
+	ret->mode=type_int;
+	if (n==0) ret->v.v_int=time(NULL);
+	else ret->v.v_int=_int(argv(0));
+	srand(ret->v.v_int);
+}
+
+_fun(rand)
+{
+	var *vp;
+	double r;
+	if (n==0) r=1;
+	else r=_float(argv(0));
+	ret->mode=type_float;
+	ret->v.v_float=r*rand()/RAND_MAX;
+}
+
 _fun(sqrt)
 {
 	ret->mode=type_float;
@@ -1316,6 +1461,25 @@ _fun(hypot)
 	else ret->v.v_float=0;
 }
 
+_fun(radian)
+{
+	double x,y;
+	ret->mode=type_float;
+	if (n>1)
+	{
+		x=_float(argv(0));
+		y=_float(argv(1));
+		if (x==0) ret->v.v_float=y>0?M_PI_2:y<0?(-M_PI_2):0;
+		else if (x>0) ret->v.v_float=atan(y/x);
+		else
+		{
+			ret->v.v_float=atan(y/x);
+			if (ret->v.v_float>0) ret->v.v_float-=M_PI;
+			else ret->v.v_float+=M_PI;
+		}
+	}
+	else ret->v.v_float=0;
+}
 
 _fun(ldexp)
 {

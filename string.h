@@ -12,6 +12,7 @@ char* sskip(char *);
 char* sget(char *);
 int scmp_skip(char **, char *);
 char* spget(char *, int);
+char* str_skip(char *);
 char* str_alloc(char **);
 
 #endif

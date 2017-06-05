@@ -25,8 +25,18 @@ _fun(wav_init)
 	set_var(time,int,Time_max);
 	pTime=&(vl->v.v_int);
 	set_fun(new);
+	set_fun(load);
 	set_fun(write);
 	set_fun(pset);
+	set_fun(padd);
+	set_fun(pget);
+	set_fun(getmax);
+	set_fun(getcos);
+	set_fun(getsin);
+	set_fun(addcos);
+	set_fun(addsin);
+	set_fun(toleT);
+	set_fun(getT);
 	
 	vp=v_find(glob_vm,"import");
 	if (!vp) goto err;
@@ -82,6 +92,41 @@ _fun_wav(new)
 	return ;
 	err:
 	dp(".wav.new: 参数格式错误\n");
+}
+
+_fun_wav(load)
+{
+	var *vp,*vl;
+	char *path;
+	Wav *wav;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n<2) goto err;
+	vp=argv(0);
+	if (!is_obj(vp)) goto err;
+	vl=argv(1);
+	path=_string(vl);
+	if (!path) goto err;
+	wav=Wav_load(path);
+	if (!wav)
+	{
+		err_alloc:
+		if (wav) free(wav);
+		err_alloc2:
+		dp(".wav.load: 加载 %s 失败\n",path);
+		return ;
+	}
+	vl=var_ralloc(vp->v.v_object,"_data",type_void|auth_noset|auth_norev,NULL);
+	if (!vl) goto err_alloc;
+	vl->v.v_void=wav;
+	vl->mode|=free_need;
+	vl=var_ralloc(vp->v.v_object,"size",type_int|auth_noset|auth_norev,NULL);
+	if (!vl) goto err_alloc;
+	vl->v.v_int=wav->size;
+	if (obj_type(vp,pType,pTypeWav)) goto err_alloc2;
+	return ;
+	err:
+	dp(".wav.load: 参数格式错误\n");
 }
 
 Wav* wav_varget(var *vp, char *fun)
@@ -143,5 +188,157 @@ _fun_wav(pset)
 	err:
 	dp(".wav.pset: 参数格式错误\n");
 }
+
+_fun_wav(padd)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n<3) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.padd");
+	if (!wav) return ;
+	Wav_add(wav,_int(argv(1)),_int(argv(2)));
+	return ;
+	err:
+	dp(".wav.padd: 参数格式错误\n");
+}
+
+_fun_wav(pget)
+{
+	var *vp;
+	Wav *wav;
+	unsigned int t;
+	ret->mode=type_int;
+	ret->v.v_int=0;
+	if (n<2) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.pget");
+	if (!wav) return ;
+	t=_int(argv(1));
+	if (t<wav->size) ret->v.v_int=wav->data[t];
+	return ;
+	err:
+	dp(".wav.pget: 参数格式错误\n");
+}
+
+_fun_wav(getmax)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_int;
+	ret->v.v_int=0;
+	if (n<2) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.getmax");
+	if (!wav) return ;
+	if (n>2) ret->v.v_int=Wav_getmax(wav,_int(argv(1)),_int(argv(2)));
+	else ret->v.v_int=Wav_getmax(wav,0,_int(argv(1)));
+	return ;
+	err:
+	dp(".wav.getmax: 参数格式错误\n");
+}
+
+_fun_wav(getcos)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_float;
+	ret->v.v_float=0;
+	if (n<3) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.getcos");
+	if (!wav) return ;
+	if (n>3) ret->v.v_float=Wav_getcos(wav,_int(argv(1)),_int(argv(2)),_int(argv(3)));
+	else ret->v.v_float=Wav_getcos(wav,_int(argv(1)),0,_int(argv(2)));
+	return ;
+	err:
+	dp(".wav.getcos: 参数格式错误\n");
+}
+
+_fun_wav(getsin)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_float;
+	ret->v.v_float=0;
+	if (n<3) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.getsin");
+	if (!wav) return ;
+	if (n>3) ret->v.v_float=Wav_getsin(wav,_int(argv(1)),_int(argv(2)),_int(argv(3)));
+	else ret->v.v_float=Wav_getsin(wav,_int(argv(1)),0,_int(argv(2)));
+	return ;
+	err:
+	dp(".wav.getsin: 参数格式错误\n");
+}
+
+_fun_wav(addcos)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n<4) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.addcos");
+	if (!wav) return ;
+	if (n>4) Wav_addcos(wav,_int(argv(1)),_float(argv(2)),_int(argv(3)),_int(argv(4)));
+	else Wav_addcos(wav,_int(argv(1)),_float(argv(2)),0,_int(argv(3)));
+	return ;
+	err:
+	dp(".wav.addcos: 参数格式错误\n");
+}
+
+_fun_wav(addsin)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n<4) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.addsin");
+	if (!wav) return ;
+	if (n>4) Wav_addsin(wav,_int(argv(1)),_float(argv(2)),_int(argv(3)),_int(argv(4)));
+	else Wav_addsin(wav,_int(argv(1)),_float(argv(2)),0,_int(argv(3)));
+	return ;
+	err:
+	dp(".wav.addsin: 参数格式错误\n");
+}
+
+_fun_wav(toleT)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_float;
+	ret->v.v_float=0;
+	if (n<5) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.toleT");
+	if (!wav) return ;
+	ret->v.v_float=Wav_toleT(wav,_int(argv(1)),_int(argv(2)),_int(argv(3)),_int(argv(4)));
+	return ;
+	err:
+	dp(".wav.toleT: 参数格式错误\n");
+}
+
+_fun_wav(getT)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_int;
+	ret->v.v_int=0;
+	if (n<5) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.getT");
+	if (!wav) return ;
+	ret->v.v_int=Wav_getT(wav,_int(argv(1)),_int(argv(2)),_int(argv(3)),_float(argv(4)));
+	return ;
+	err:
+	dp(".wav.getT: 参数格式错误\n");
+}
+
 
 

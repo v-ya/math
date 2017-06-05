@@ -1,16 +1,37 @@
 # math
 * math script interpreter.
 * See test.txt for detailed usage.
+* function usage see "Func-used.txt"
 ---
 ### 预计更新
-* 完善分项 Bpm
++ 完善分项 Bpm
+- 椭圆渲染函数
 * 完善分项 Wav
-* 新增视频分项
 * 完成 main.c main() "-var"
 * 实现脚本传参
 * 新加分项 Mat
 * 外置模块加载功能
 * ...
+---
+### v1.0.6 2017.06.05
+* f object.set()
+* + .wav.(padd pget getmax getcos getsin addcos addsin)
+* + 运算符 >=, <=, !=, ?, $
+* + .func(), 可自定义函数
+* 修复若干错误
+---
+### v1.0.5 2017.05.29
+* + .bmp.rgba 系列函数, .bmp.setxyt 函数
+* f .bmp.fset(), .bmp.fadd()
+* + .avi 分项
+* + .srand() .rand()
+* + .bmp.load() .bmp.clean() .bmp.ffill()
+* + .bmp.cset() .bmp.cadd() .bmp.fcset() .bmp.fcadd()
+* + .bmp.arc_pra() .bmp.line() .bmp.arc() .bmp.next()
+* rename .bmp.blockset() -> .bmp.putset(), .bmp.blockadd() -> .bmp.putadd()
+* + .bmp.getset() .bmp.getadd()
+* + .bmp.rota() .bmp.getzoom() .bmp.revw() .bmp.revh()
+* 部分修正
 ---
 ### v1.0.4 2017.05.25
 * 修复部分浮点数("float":double)传参错误

@@ -32,6 +32,7 @@ _fun(exit);
 _fun(echo);
 _fun(set);
 _fun(unset);
+_fun(func);
 
 // other
 _fun(test);
@@ -46,6 +47,8 @@ _fun(int);
 _fun(long);
 _fun(float);
 _fun(cal);
+_fun(srand);
+_fun(rand);
 _fun(sqrt);
 _fun(squa);
 _fun(pow);
@@ -71,6 +74,7 @@ _fun(abs);
 _fun(sign);
 _fun(mod);
 _fun(hypot);
+_fun(radian);
 _fun(ldexp);
 
 // debug

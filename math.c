@@ -2,6 +2,7 @@
 
 varmat *math_vm=NULL;
 varmat *glob_vm=NULL;
+var *_this_=NULL;
 
 int glob_init(void)
 {
@@ -21,6 +22,7 @@ int glob_init(void)
 	set_fun(echo);
 	set_fun(set);
 	set_fun(unset);
+	set_fun(func);
 	// other
 	set_fun(test);
 	set_fun(clear);
@@ -34,6 +36,8 @@ int glob_init(void)
 	set_fun(long);
 	set_fun(float);
 	set_fun(cal);
+	set_fun(srand);
+	set_fun(rand);
 	set_fun(sqrt);
 	set_fun(squa);
 	set_fun(pow);
@@ -59,8 +63,13 @@ int glob_init(void)
 	set_fun(sign);
 	set_fun(mod);
 	set_fun(hypot);
+	set_fun(radian);
 	set_fun(ldexp);
 	
+	// this
+	vp=v_alloc(glob_vm,"this",type_void,NULL);
+	vp->mode=type_object|auth_noset|auth_norev|func_code;
+	_this_=vp;
 	// const var
 	vp=v_alloc(glob_vm,"const",type_object|auth_noset|auth_norev,NULL);
 	#define	set_var(_v,_n) v.v_float=_v;vp->v.v_void=var_alloc((var*)vp->v.v_void,#_n,type_float|auth_noset|auth_norev,&v)
@@ -86,6 +95,7 @@ int glob_init(void)
 	set_fun(calc_init);
 	set_fun(bmp_init);
 	set_fun(wav_init);
+	set_fun(avi_init);
 	
 	vp=v_alloc(glob_vm,"d",type_object|auth_noset|auth_norev,NULL);
 	set_fun(pv);
@@ -173,7 +183,7 @@ char* get_varlist(char *exp, int *n, var **vl)
 		}
 		else
 		{
-			vlist=var_alloc(*vl,v.name,vp->mode,&(vp->v));
+			vlist=var_alloc(*vl,v.name,vp->mode|auth_noset,&(vp->v));
 			if (!vlist) goto err;
 		}
 		(*n)++;
@@ -188,6 +198,46 @@ char* get_varlist(char *exp, int *n, var **vl)
 	*n=-1;
 	var_listfree(*vl);
 	*vl=NULL;
+	return exp;
+}
+
+char* run_func(char *exp, var **vp)
+{
+	var *vl,*list;
+	int _argc,mode,n;
+	var *_argv,*this;
+	char *code;
+	exp=get_varlist(exp,&n,&list);
+	this=_this_->v.v_object;
+	if (this)
+	{
+		vl=var_find(this,"argc");
+		_argc=vl->v.v_int;
+		vl=var_find(this,"argv");
+		_argv=vl->v.v_object;
+	}
+	vl=var_find((*vp)->v.v_object,"code");
+	_this_->v.v_object=vl;
+	code=(char*)vl->v.v_void;
+	mode=(*vp)->mode;
+	(*vp)->mode|=auth_noset;
+	vl=var_find(_this_->v.v_object,"argc");
+	vl->v.v_int=n;
+	vl=var_find(_this_->v.v_object,"argv");
+	vl->v.v_object=list;
+	math_run(code,NULL,0,NULL);
+	var_listfree(list);
+	vl->v.v_object=NULL;
+	_this_->v.v_object=this;
+	if (this)
+	{
+		vl=var_find(this,"argc");
+		vl->v.v_int=_argc;
+		vl=var_find(this,"argv");
+		vl->v.v_object=_argv;
+	}
+	(*vp)->mode=mode;
+	*vp=var_find((*vp)->v.v_object,"ret");
 	return exp;
 }
 
@@ -256,7 +306,8 @@ char* get_var(char *exp, var **vp, var *v)
 	}
 	else if (*exp=='(')
 	{
-		if ((m_type(vl->mode)==type_void)&&m_func(vl->mode))
+		if (!m_func(vl->mode)) goto err_func;
+		if (m_type(vl->mode)==type_void)
 		{
 			int n;
 			func f;
@@ -267,6 +318,7 @@ char* get_var(char *exp, var **vp, var *v)
 			var_listfree(vl);
 			vl=v;
 		}
+		else if (m_type(vl->mode)==type_object) exp=run_func(exp,&vl);
 		else goto err_func;
 		goto _get_var_loop;
 	}
@@ -350,6 +402,9 @@ char* get_float(char *exp, double *r)
 			if (m_poin(vl->mode)) *r=*((double*)(vl->v.v_void));
 			else *r=vl->v.v_float;
 			break;
+		case type_void:
+			*r=0;
+			break;
 		default:
 			dp("get_float: 获取的变量不能转换成数值\n");
 			*r=0;
@@ -377,46 +432,87 @@ char* cal(char *exp, var *v)
 		_start:
 		exp++;
 		while(is_space(*exp)) exp++;
-		if (c=='@') goto _cal_equ;
-		exp=get_float(exp,&t);
 		switch(c) {
 			case ':':
 			case '(':
 			case '[':
+				exp=get_float(exp,&t);
 				r=t;
 				break;
 			case '+':
+				exp=get_float(exp,&t);
 				r+=t;
 				break;
 			case '-':
+				exp=get_float(exp,&t);
 				r-=t;
 				break;
 			case '*':
+				exp=get_float(exp,&t);
 				r*=t;
 				break;
 			case '/':
+				exp=get_float(exp,&t);
 				r/=t;
 				break;
 			case '=':
+				exp=get_float(exp,&t);
 				r=(r==t)?1:0;
 				break;
 			case '>':
-				r=(r>t)?1:0;
-				break;
+				if (exp[0]=='=')
+				{
+					exp++;
+					while(is_space(*exp)) exp++;
+					exp=get_float(exp,&t);
+					r=(r>=t)?1:0;
+					break;
+				}
+				else
+				{
+					exp=get_float(exp,&t);
+					r=(r>t)?1:0;
+					break;
+				}
 			case '<':
-				r=(r<t)?1:0;
-				break;
+				if (exp[0]=='=')
+				{
+					exp++;
+					while(is_space(*exp)) exp++;
+					exp=get_float(exp,&t);
+					r=(r<=t)?1:0;
+					break;
+				}
+				else
+				{
+					exp=get_float(exp,&t);
+					r=(r<t)?1:0;
+					break;
+				}
 			case '&':
+				exp=get_float(exp,&t);
 				r=((r!=0)&&(t!=0))?1:0;
 				break;
 			case '|':
+				exp=get_float(exp,&t);
 				r=((r==0)&&(t==0))?0:1;
 				break;
 			case '!':
-				r=(t==0)?1:0;
-				break;
+				if (exp[0]=='=')
+				{
+					exp++;
+					while(is_space(*exp)) exp++;
+					exp=get_float(exp,&t);
+					r=(r!=t)?1:0;
+					break;
+				}
+				else
+				{
+					exp=get_float(exp,&t);
+					r=(t==0)?1:0;
+					break;
+				}
 			case '@':
-				_cal_equ:
 				exp=get_var(exp,&vl,&vtmp);
 				if (m_auth_rev(vl->mode))
 				{
@@ -443,6 +539,56 @@ char* cal(char *exp, var *v)
 						break;
 				}
 				break;
+			case '?':
+				if (r==0)
+				{
+					c=0;
+					while(*exp&&*exp!=';')
+					{
+						if (*exp=='('||*exp=='[') c++;
+						else if (*exp==')'||*exp==']') c--;
+						else if (*exp==':'&&c==0)
+						{
+							exp++;
+							while(is_space(*exp)) exp++;
+							break;
+						}
+						if (c<0) break;
+						exp++;
+					}
+				}
+				exp=get_float(exp,&r);
+				break;
+			case '$':
+				c=0;
+				while(*exp&&*exp!=';')
+				{
+					if (*exp=='('||*exp=='[') c++;
+					else if (*exp==')'||*exp==']') c--;
+					else if (*exp==':'&&c==0)
+					{
+						exp++;
+						while(is_space(*exp)) exp++;
+						break;
+					}
+					if (c<0) break;
+					exp++;
+				}
+				c=0;
+				while(*exp&&*exp!=';')
+				{
+					if (*exp=='('||*exp=='[') c++;
+					else if (*exp==')'||*exp==']') c--;
+					else if (*exp==':'&&c==0)
+					{
+						exp++;
+						while(is_space(*exp)) exp++;
+						break;
+					}
+					if (c<0) break;
+					exp++;
+				}
+				exp=get_float(exp,&r);
 		}
 		while(is_space(*exp)) exp++;
 	}
@@ -495,6 +641,24 @@ int math_run_save(var **vl)
 	return -1;
 }
 
+void math_run_free(void)
+{
+	var *v;
+	if (v=v_find(math_vm,"_start")) v_free(math_vm,"_start");
+	if (v=v_find(math_vm,"_ret")) v_free(math_vm,"_ret");
+	if (v=v_find(math_vm,"_sp"))
+	{
+		int i;
+		char *name;
+		for(i=v->v.v_int-1;i>=0;i--)
+		{
+			name=spget("_sp_",i);
+			if (v=v_find(math_vm,name)) v_free(math_vm,name);
+		}
+		v_free(math_vm,"_sp");
+	}
+}
+
 int math_run_init(void *_start, int **__ret)
 {
 	value vp;
@@ -542,7 +706,6 @@ int math_run(char *exp, char *lab, int is_vmres, var *vlist)
 	{
 		math_vm=v_list(NULL,vlist);
 		v_add(math_vm,_vm);
-		if (math_run_save(&_vl)) goto err;
 		var_listfree(_vl);
 		_vl=NULL;
 	}
@@ -550,6 +713,7 @@ int math_run(char *exp, char *lab, int is_vmres, var *vlist)
 	else math_vm=v_list(math_vm,vlist);
 	if (!math_vm) goto err;
 	// 生成系统变量
+	if (math_run_save(&_vl)) goto err;
 	if (math_run_init(exp,&__ret)) goto err;
 	// 查找标签
 	if (lab)
@@ -631,7 +795,11 @@ int math_run(char *exp, char *lab, int is_vmres, var *vlist)
 	_ret=*__ret;
 	if (is_vmres==1||is_vmres==2) varmat_free(math_vm);
 	math_vm=_vm;
-	if (_vl) v_list(math_vm,_vl);
+	if (_vl)
+	{
+		math_run_free();
+		v_list(math_vm,_vl);
+	}
 	return _ret;
 }
 

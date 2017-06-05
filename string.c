@@ -59,6 +59,39 @@ char* spget(char *sa, int n)
 	return s;
 }
 
+char* str_skip(char *s)
+{
+	if (*s!='\"') return s;
+	s++;
+	while(1)
+	{
+		switch (*s)
+		{
+			case '\"':
+			case ';':
+			case '\n':
+			case 0:
+				goto end;
+			case '\\':
+				s++;
+				if (*s=='x')
+				{
+					s++;
+					if ((*s>='0'&&*s<='9')&&(*s>='A'&&*s<='F')&&(*s>='a'&&*s<='f')) s++;
+					if ((*s>='0'&&*s<='9')&&(*s>='A'&&*s<='F')&&(*s>='a'&&*s<='f')) s++;
+				}
+				else s++;
+				break;
+			default:
+				s++;
+				break;
+		}
+	}
+	end:
+	if (*s=='\"') s++;
+	return s;
+}
+
 char* str_alloc(char **exp)
 {
 	char *s=*exp,*str,*str1=NULL;
@@ -116,14 +149,14 @@ char* str_alloc(char **exp)
 				{
 					s++;
 					n=0;
-					if ((*s>='0'&&*s<='9')&&(*s>='A'&&*s<='F')&&(*s>='a'&&*s<='f'))
+					if ((*s>='0'&&*s<='9')||(*s>='A'&&*s<='F')||(*s>='a'&&*s<='f'))
 					{
 						n=(*s>='0'&&*s<='9')?(*s-'0'):(*s>='A'&&*s<='F')?(*s-'A'+10):(*s-'a'+10);
 						s++;
 					}
-					if ((*s>='0'&&*s<='9')&&(*s>='A'&&*s<='F')&&(*s>='a'&&*s<='f'))
+					if ((*s>='0'&&*s<='9')||(*s>='A'&&*s<='F')||(*s>='a'&&*s<='f'))
 					{
-						n=(n<<4)+(*s>='0'&&*s<='9')?(*s-'0'):(*s>='A'&&*s<='F')?(*s-'A'+10):(*s-'a'+10);
+						n=(n<<4)+((*s>='0'&&*s<='9')?(*s-'0'):(*s>='A'&&*s<='F')?(*s-'A'+10):(*s-'a'+10));
 						s++;
 					}
 					*(str++)=n;

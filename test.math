@@ -1,0 +1,107 @@
+#!/usr/bin/math
+#start
+.set("string:lab");
+.echo("Write a string to see some examples, \"exit\" will quit, \"list\" to see examples.\n");
+#loop
+.echo("# ");
+.strget("lab");
+.if(.ldw_test(lab)); .jdw("call_ex");
+.echo("Can not be found \"%s\".\n",lab);
+.jup("loop");
+#call_ex
+.calldw(lab);
+.jup("loop");
+
+# will exit
+#exit
+exit(0);
+
+#list
+.echo("exit, list, sum, cal_pi, diff, inte, solv\n");
+.ret();
+
+# calculate 1+2+...+100
+#sum
+.set("int:i","int:n");
+.echo("Summarize\n"):
+:0@i@n;
+#loop
+:i+1@i
+:n+i@n;
+.if(:i<100); .jup("loop");
+.echo("1+2+...+100 = %d\n",n);
+.unset("i","n");
+.ret();
+
+#cal_pi
+.echo("calculate pi\n");
+.set("float:pi","int:i","float:xp");
+:2@pi
+:0@xp;
+#loop
+:i+1@i
+:.sqrt(2+xp)@xp
+:pi/xp*2@pi;
+.if(:i<100); .jup("loop");
+.echo("pi=%f,e=%e\n",pi,:pi-.const.pi);
+.unset("pi","n","xp");
+.ret();
+
+#diff
+.import.calc_init();
+.set("string:fun","string:fund","float:x","float:y");
+.strcpy("fun",":.sin(x)*(.cos(x)+x)+1");
+.echo("Numerical differentiation\n");
+:1.23@x;
+:.cal(fun)@y;
+.echo("x=%.2f, (%s)=%f, (%s)'=%f\n",x,fun,.cal(fun),fun,.calc.diff(fun,"x"));
+:2.34@x
+:.cal(fun)@y;
+.echo("x=%.2f, (%s)=%f, (%s)'=%f\n",x,fun,y,fun,.calc.diff(fun,"x",x));
+:3.45@x;
+:.cal(fun)@y;
+.echo("x=%.2f, (%s)=%f, (%s)'=%f\n",x,fun,.cal(fun),fun,.calc.diffq(fun,"x"));
+:4.56@x
+:.cal(fun)@y;
+.echo("x=%.2f, (%s)=%f, (%s)'=%f\n",x,fun,y,fun,.calc.diffq(fun,"x",x));
+.echo("Symbol differential\n");
+.echo("support: + - * / .sqrt .squa .pow .exp .ln .lg .log .sin .cos .tan .asin .acos .atan .sinh .cosh .tanh .asinh .acosh .atanh\n");
+.calc.diffs("fund",fun,"x");
+.echo("(%s)'=%s\nx=%.2f, y=%f, y'=%f\n",fun,fund,:1.23@x,.cal(fun),.cal(fund));
+.unset("fun","fund","x","y");
+.import.calc_free();
+.ret()
+
+#inte
+.import.calc_init();
+.set("string:fun","float:x","float:a","float:b");
+.strcpy("fun",":.sin(x)");
+.echo("Numerical integration\n");
+:0@x@a
+:.const.pi@b;
+.echo("x=%.2f, a=%.2f, b=%.2f, S(%s,a,b)=%f\n",x,a,b,fun,.calc.inte(fun,"x",a,b));
+:.const.pi_2@b;
+.echo("x=%.2f, a=%.2f, b=%.2f, S(%s,a,b)=%f\n",x,a,b,fun,.calc.inte(fun,"x",b));
+:-.const.pi@b;
+.echo("x=%.2f, a=%.2f, b=%.2f, S(%s,a,b)=%f\n",x,a,b,fun,.calc.inteq(fun,"x",a,b));
+:-.const.pi_2@b;
+.echo("x=%.2f, a=%.2f, b=%.2f, S(%s,a,b)=%f\n",x,a,b,fun,.calc.inteq(fun,"x",b));
+.unset("fun","x","a","b");
+.import.calc_free();
+.ret()
+
+#solv
+.import.calc_init();
+.set("string:fun","float:x");
+.strcpy("fun",":.sin(x)+.exp(x)");
+.echo("Tangent method solution equation\n");
+:1@x;
+.echo("%s=0, x0=%.2f,x=%f,e=%e\n",fun,x,:.calc.solv(fun,"x",x)@x,.cal(fun));
+:-10@x;
+.echo("%s=0, x0=%.2f,x=%f,e=%e\n",fun,x,:.calc.solv(fun,"x")@x,.cal(fun));
+.unset("fun","x");
+.import.calc_free();
+.ret()
+
+
+

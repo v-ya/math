@@ -1,0 +1,145 @@
+type	: void int long float string object
+ilf	= int | long | float
+
+[.]
+float abs(ilf);
+float acos(ilf);
+float acosh(ilf);
+float asin(ilf);
+float asinh(ilf);
+float atan(ilf);
+float atanh(ilf);
+float cal(string);		// Calculation formula
+void calldw(string);		// label
+void callup(string);		// label
+float ceil(ilf);
+void clear(string, ...);	// var name
+float cos(ilf);
+float cosh(ilf);
+float echo(string, ...);	// like printf, The program has the possibility of a crash
+end exit([ilf]);		// exit program
+float exp(ilf);
+float float(ilf);
+float floor(ilf);
+float hypot(ilf,ilf);
+void if(var);			// if (ilf == 0||pointer == NULL): Will skip the next statement
+int int(ilf);
+void jdw(string);		// label
+void jup(string);		// label
+float ldexp(ilf,ilf);
+int ldw_test(string);		// label
+float lg(ilf);
+float ln(ilf);
+float log(ilf);
+long long(ilf);
+int lup_test(string);		// label
+float mod(ilf,ilf);
+float pow(ilf,ilf);
+float rand([ilf]);		// if ([ilf]) ret 0~[ilf]; else ret 0~1
+void[int] ret([ilf]);		// if ([ilf]) ret [ilf]; else ret void
+void [object.]set(string, ...);	// "type:name"
+int sign(ilf);
+float sin(ilf);
+float sinh(ilf);
+void sprintf(string,string, ...);
+				// sprintf("name",string, ...); like sprintf, The program has the possibility of a crash
+float sqrt(ilf);
+float squa(ilf);		// ret (ilf*ilf)
+int srand([ilf]);		// if ([ilf]) srand(sr=ilf); else srand(sr=time(NULL)); ret sr
+int strcmp(string,string);
+void strcpy(string,string);	// strcpy("name",string);
+void strget(string);		// "name", Will get a line of input assigned to var(name)
+float tan(ilf);
+float tanh(ilf);
+int test(string,[string]);	// test("name",["type"]); Tests if there is a variable of [type "type" with] name "name"
+void [object.]unset(string, ...);
+				// "name"
+[.d.]
+void pg();			// print glob_vm var
+void pv();			// print math_vm var
+void po(object);		// print object.*
+[.import.]
+void calc_init();
+void bmp_init();
+void wav_init();
+void avi_init();
+void *_free();			// if call #_init(), will build #_free()
+[.calc.]
+float diff(string,string,[ilf]);
+				// diff(":f(x)","x",[ilf]);
+float diffq(string,string,[ilf]);
+				// like diff, Increased accuracy
+void diffs(string,string,string);
+				// diffs("name",":f(x)","x");
+float inte(string,string,[ilf],ilf);
+				// inte(":f(x)","x",[a],b); if (![a]) a=x;
+float inteq(string,string,[ilf],ilf);
+				// like diff, Increased accuracy
+float solv(string,string,[ilf]);
+				// solv(":f(x)","x",[ilf]); if (![ilf]) ilf=x;
+[.bmp.]
+void new(object,int,int);	// new(object,width,height); if (OK) object -> object("Bmp");
+void load(object,string);	// load(object,"path"); if (OK) object -> object("Bmp");
+void write(object("Bmp"),string);
+				// write(object,"path");
+void setxyt(string,string,string);
+				// setxyt("x","y","t");
+int setcolor([int],[[int]],[[[int]]],[[[[int]]]]);
+				// setcolor(R,G,B,A); [R]=0,[G]=0,[B]=0,[A]=255; ret color and set color
+int rgba([int],[[int]],[[[int]]],[[[[int]]]]);
+				// like setcolor, but not set and only ret
+int R([int]);			// if ([int]) set color.R=int and ret color; else ret color.R;
+int G([int]);			// if ([int]) set color.G=int and ret color; else ret color.G;
+int B([int]);			// if ([int]) set color.B=int and ret color; else ret color.B;
+int A([int]);			// if ([int]) set color.A=int and ret color; else ret color.A;
+void clean(object("Bmp"),[int]);
+				// clean([COLOR]); if ([COLOR]) set all point = COLOR; else set all point = color;
+int pget(object("Bmp"),int,int);
+				// clean(object,x,y); get c(x,y);
+void pset(object("Bmp"),int,int);
+				// pset(object,x,y); c(x,y):=color;
+void padd(object("Bmp"),int,int);
+				// padd(object,x,y); c(x,y):c+=color;
+void setalpha(object("Bmp"),int);
+				// set bmp all alpha value = int
+void fset(object("Bmp"),string,string,[[float]],[float],[[[float]]]);
+				// fset(object,":fx(t)",":fy(t)",begin,end,step);
+void fadd(object("Bmp"),string,string,[[float]],[float],[[[float]]]);
+				// fadd(object,":fx(t)",":fy(t)",begin,end,step);
+void fill(object("Bmp"),int,int);
+				// fill(object,x,y);
+void ffill(object("Bmp"),string,int,int);
+				// ffill(object,":fc(x,y,RGBA)",x,y); point c=fc()
+void cset(object("Bmp"),string,[int,int,int,int]);
+				// cset(object,":fcon(x,y,RGBA)",x1,y1,x2,y2); if (fcon()!=0) set c:=color;
+void cadd(object("Bmp"),string,[int,int,int,int]);
+				// cadd(object,":fcon(x,y,RGBA)",x1,y1,x2,y2); if (fcon()!=0) set c:c+=color;
+void fcset(object("Bmp"),string,string,[int,int,int,int]);
+				// fcset(object,":fcon(x,y,RGBA)",":fc(x,y,RGBA)",x1,y1,x2,y2); if (fcon()!=0) set c:=fc();
+void fcadd(object("Bmp"),string,string,[int,int,int,int]);
+				// fcadd(object,":fcon(x,y,RGBA)",":fc(x,y,RGBA)",x1,y1,x2,y2); if (fcon()!=0) set c:c+=fc();
+void putset(object("Bmp"),object("Bmp"),[int,int]);
+				// putset(b1,b2,x0,y0); b2 -> set at b1(x0,y0);
+void putadd(object("Bmp"),object("Bmp"),[int,int]);
+				// putadd(b1,b2,x0,y0); b2 -> add at b1(x0,y0);
+void getset(object("Bmp"),object("Bmp"),[int,int]);
+				// getset(b1,b2,x0,y0); b1 <- set at b2(x0,y0);
+void getadd(object("Bmp"),object("Bmp"),[int,int]);
+				// getadd(b1,b2,x0,y0); b1 <- add at b2(x0,y0);
+void getzoom(object("Bmp"),object("Bmp"));
+				// getzoom(b1,b2); b2 -zoom-> b1
+void rota(object("Bmp"),object("Bmp"),ilf,ilf,ilf);
+				// rota(b1,b2,x0,y0,rad); b2 -rota(x0,y0,rad)-> b1
+void revw(object("Bmp"));	// 
+void revh(object("Bmp"));	// 
+void arc_pra(object("Bmp"),ilf,ilf,ilf,ilf,ilf);
+				// arc_pra(object,x0,y0,r,rad1,rad2);
+void line(object("Bmp"),ilf,ilf,ilf,ilf);
+				// line(object,x1,y1,x2,y2);
+void arc(object("Bmp"),int,int,int,int,int,int);
+				// arc(object,x1,y1,x2,y2,x3,y3);
+void next(object("Bmp"),int,int);
+				// next(object,x1,y1);
+[.wav.]
+[.avi.]
+
