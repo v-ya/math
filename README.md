@@ -14,23 +14,23 @@
 * ...
 ---
 ### v1.0.6 2017.06.05
-* f object.set()
-* + .wav.(padd pget getmax getcos getsin addcos addsin)
-* + 运算符 >=, <=, !=, ?, $
-* + .func(), 可自定义函数
+* fix object.set()
+* add .wav.(padd pget getmax getcos getsin addcos addsin)
+* add 运算符 >=, <=, !=, ?, $
+* add .func(), 可自定义函数
 * 修复若干错误
 ---
 ### v1.0.5 2017.05.29
-* + .bmp.rgba 系列函数, .bmp.setxyt 函数
-* f .bmp.fset(), .bmp.fadd()
-* + .avi 分项
-* + .srand() .rand()
-* + .bmp.load() .bmp.clean() .bmp.ffill()
-* + .bmp.cset() .bmp.cadd() .bmp.fcset() .bmp.fcadd()
-* + .bmp.arc_pra() .bmp.line() .bmp.arc() .bmp.next()
+* add .bmp.rgba 系列函数, .bmp.setxyt 函数
+* fix .bmp.fset(), .bmp.fadd()
+* add .avi 分项
+* add .srand() .rand()
+* add .bmp.load() .bmp.clean() .bmp.ffill()
+* add .bmp.cset() .bmp.cadd() .bmp.fcset() .bmp.fcadd()
+* add .bmp.arc_pra() .bmp.line() .bmp.arc() .bmp.next()
 * rename .bmp.blockset() -> .bmp.putset(), .bmp.blockadd() -> .bmp.putadd()
-* + .bmp.getset() .bmp.getadd()
-* + .bmp.rota() .bmp.getzoom() .bmp.revw() .bmp.revh()
+* add .bmp.getset() .bmp.getadd()
+* add .bmp.rota() .bmp.getzoom() .bmp.revw() .bmp.revh()
 * 部分修正
 ---
 ### v1.0.4 2017.05.25
