@@ -26,8 +26,17 @@ typedef struct S_wav {
 } Wav;
 
 Wav* Wav_new(unsigned int);
+Wav* Wav_load(char *);
 int Wav_write(Wav *, char *);
 void Wav_set(Wav *, unsigned int, unsigned int);
+void Wav_add(Wav *, unsigned int, unsigned int);
+int Wav_getmax(Wav *, unsigned int, unsigned int);
+double Wav_getcos(Wav *, unsigned int, unsigned int, unsigned int);
+double Wav_getsin(Wav *, unsigned int, unsigned int, unsigned int);
+void Wav_addcos(Wav *, unsigned int, double, unsigned int, unsigned int);
+void Wav_addsin(Wav *, unsigned int, double, unsigned int, unsigned int);
+double Wav_toleT(Wav *, unsigned int, unsigned int, unsigned int, unsigned int);
+unsigned int Wav_getT(Wav *, unsigned int, unsigned int, unsigned int, double);
 
 #endif
 
