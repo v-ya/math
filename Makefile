@@ -3,7 +3,7 @@ obj	= main.o debug.o string.o var.o fun.o math.o Calculus.o Bmp.o Wav.o Avi.o
 math: ${obj}
 	gcc ${obj} -lm -o $@
 run: math
-	./math Ztest.math
+	./math test.math
 clear:
 	rm -f math *.o *.bmp *.wav *.avi
 
