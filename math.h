@@ -15,7 +15,7 @@
 #include "fun.h"
 #include "fun_ext.h"
 
-#define	VERSION "v1.0.6"
+#define	VERSION "v1.0.7"
 
 extern varmat *math_vm;
 extern varmat *glob_vm;

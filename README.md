@@ -13,6 +13,10 @@
 * 外置模块加载功能
 * ...
 ---
+### v1.0.7 2017.06.17
+* add .void() .var()
+* 增加命令行脚本传参 only string
+---
 ### v1.0.6 2017.06.05
 * fix object.set()
 * add .wav.(padd pget getmax getcos getsin addcos addsin)
@@ -70,4 +74,5 @@
 * New .ldw_test() .lup_test()
 ---
 ### v1.0.0 2017.05.19
+
 

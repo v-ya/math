@@ -71,7 +71,9 @@ int get_command(void)
 
 int main(int argc, char *argv[])
 {
-	int n;
+	int n,i;
+	var *vp;
+	char sn[16];
 	for(n=1;n<argc;n++)
 	{
 		if (argv[n][0]=='-')
@@ -141,6 +143,19 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+	vl=var_alloc(vl,"argv",type_object,NULL);
+	vp=vl->v.v_object;
+	vl=var_ralloc(vl,"argc",type_int,NULL);
+	for(i=0;n<argc;n++)
+	{
+		sprintf(sn,"_%d",i);
+		i++;
+		vp=var_ralloc(vp,sn,type_string,NULL);
+		vp->v.v_string=malloc(strlen(argv[n]+1));
+		strcpy(vp->v.v_string,argv[n]);
+		vp->mode|=free_need;
+	}
+	vl->v.v_int=i;
 	_debug_init(debug);
 	if (path)
 	{

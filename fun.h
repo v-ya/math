@@ -20,6 +20,7 @@ double _float(var *);
 #define	_object(vp) (m_leng(vp->mode)==leng_no&&m_type(vp->mode)==type_object)?vp->v.v_object:NULL
 
 // sys
+_fun(var);
 _fun(jdw);
 _fun(jup);
 _fun(ldw_test);
@@ -35,6 +36,7 @@ _fun(unset);
 _fun(func);
 
 // other
+_fun(void);
 _fun(test);
 _fun(clear);
 _fun(strcpy);

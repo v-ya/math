@@ -117,6 +117,43 @@ double _float(var *vp)
 	return (double)0.0;
 }
 
+_fun(var)
+{
+	var *vp;
+	ret->mode=type_err;
+	ret->v.v_void=NULL;
+	if (n>0)
+	{
+		vp=argv(0);
+		if (m_type2(vp->mode)==type_string&&vp->v.v_string)
+		{
+			get_var(vp->v.v_string,&vp,ret);
+			strcpy(ret->name,"$");
+			if (vp!=ret)
+			{
+				int m=m_type3(vp->mode);
+				if (m==type_int||m==type_long||m==type_float)
+				{
+					ret->mode=vp->mode|type_pointer;
+					ret->v.v_void=&(vp->v.v_void);
+				}
+				else
+				{
+					ret->mode=vp->mode;
+					ret->v.v_void=vp->v.v_void;
+				}
+			}
+			if (m_type2(vp->mode)==type_err)
+			{
+				vp=argv(0);
+				dp(".var: 不能找到变量 %s\n",vp->v.v_string);
+			}
+			return ;
+		}
+	}
+	dp(".var: 不能找到变量名\n");
+}
+
 _fun(jdw)
 {
 	char *s=*exps,*lab=NULL;
@@ -463,8 +500,6 @@ _fun(set)
 	char *s,name[32];
 	int mode;
 	var *vp;
-	ret->mode=type_void;
-	ret->v.v_void=NULL;
 	if (n==0) return ;
 	if (call)
 	{
@@ -472,6 +507,7 @@ _fun(set)
 		{
 			dp(".set: %s 变量不是 object 类型\n",call->name);
 			ret->mode=type_err;
+			ret->v.v_void=NULL;
 			return ;
 		}
 	}
@@ -554,6 +590,8 @@ _fun(set)
 			if (!vp) goto err_alloc;
 		}
 	}
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
 }
 
 _fun(unset)
@@ -561,15 +599,19 @@ _fun(unset)
 	char *name;
 	int mode;
 	var *vp;
-	ret->mode=type_void;
-	ret->v.v_void=NULL;
-	if (n==0) return ;
+	if (n==0)
+	{
+		ret->mode=type_void;
+		ret->v.v_void=NULL;
+		return ;
+	}
 	if (call)
 	{
 		if (m_type2(call->mode)!=type_object)
 		{
 			dp(".unset: %s 变量不是 object 类型\n",call->name);
 			ret->mode=type_err;
+			ret->v.v_void=NULL;
 			return ;
 		}
 	}
@@ -607,6 +649,8 @@ _fun(unset)
 			}
 		}
 	}
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
 }
 
 _fun(func)
@@ -736,6 +780,12 @@ _fun(func)
 }
 
 // other
+_fun(void)
+{
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+}
+
 _fun(test)
 {
 	

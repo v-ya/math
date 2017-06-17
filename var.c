@@ -220,7 +220,7 @@ var* var_alloc(var *vl, char *name, unsigned int mode, value *vp)
 
 var* var_ralloc(var *vl, char *name, unsigned int mode, value *vp)
 {
-	if (!vl) return NULL;
+	if (!vl) return var_alloc(vl,name,mode,vp);
 	vl=var_free(vl,name);
 	return var_alloc(vl,name,mode,vp);
 }

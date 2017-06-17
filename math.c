@@ -10,6 +10,7 @@ int glob_init(void)
 	var *vp;
 	glob_vm=varmat_alloc();
 	#define	set_fun(f) v.v_void=&_func_##f;v_alloc(glob_vm,#f,type_void|auth_noset|auth_norev|func_code,&v)
+	set_fun(var);
 	set_fun(jdw);
 	set_fun(jup);
 	set_fun(ldw_test);
@@ -24,6 +25,7 @@ int glob_init(void)
 	set_fun(unset);
 	set_fun(func);
 	// other
+	set_fun(void);
 	set_fun(test);
 	set_fun(clear);
 	set_fun(strcpy);
@@ -325,9 +327,10 @@ char* get_var(char *exp, var **vp, var *v)
 	else if (*exp=='[')
 	{
 		int px;
+		var vv;
 		if ((m_leng(vl->mode))==leng_no) goto err_noarr;
-		exp=cal(exp,v);
-		px=(int)v->v.v_float;
+		exp=cal(exp,&vv);
+		px=(int)vv.v.v_float;
 		if (px<0||px>=m_leng(vl->mode)) goto err_szarr;
 		if (m_poin(vl->mode)) v->v.v_void=*((void**)(vl->v.v_void));
 		else v->v.v_void=vl->v.v_void;
