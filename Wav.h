@@ -7,6 +7,7 @@ _fun_wav(wav_free);
 _fun_wav(new);
 _fun_wav(load);
 _fun_wav(write);
+_fun_wav(clean);
 _fun_wav(pset);
 _fun_wav(padd);
 _fun_wav(pget);

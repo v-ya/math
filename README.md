@@ -13,6 +13,9 @@
 * 外置模块加载功能
 * ...
 ---
+### v1.0.8 2017.06.27
+* add .wav.clean() .wav.Samp .wav.mSamp .wav.mvol
+---
 ### v1.0.7 2017.06.17
 * add .void() .var()
 * 增加命令行脚本传参 only string

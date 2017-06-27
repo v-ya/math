@@ -95,7 +95,7 @@ int A([int]);			// if ([int]) set color.A=int and ret color; else ret color.A;
 void clean(object("Bmp"),[int]);
 				// clean([COLOR]); if ([COLOR]) set all point = COLOR; else set all point = color;
 int pget(object("Bmp"),int,int);
-				// clean(object,x,y); get c(x,y);
+				// pget(object,x,y); get c(x,y);
 void pset(object("Bmp"),int,int);
 				// pset(object,x,y); c(x,y):=color;
 void padd(object("Bmp"),int,int);
@@ -141,5 +141,39 @@ void arc(object("Bmp"),int,int,int,int,int,int);
 void next(object("Bmp"),int,int);
 				// next(object,x1,y1);
 [.wav.]
+void new(object,int);		// new(object,nsamp); if (OK) object -> object("Wav");
+void load(object,string);	// load(object,"path"); if (OK) object -> object("Wav");
+void write(object("Wav"),string);
+				// write(object,"path");
+void clean(object("Wav"),[int],[[int]]);
+				// clean(object,[start],[[end]]);
+void pset(object("Wav"),int,int);
+				// pset(object,t,v); w(t):=v;
+void padd(object("Wav"),int,int);
+				// padd(object,t,v); w(t)+=v;
+int pget(object("Wav"),int);
+				// pget(object,t); get w(t);
+int getmax(object("Wav"),[int],int);
+				// getmax(object,[start],end); ret max(>0||<0);
+int getcos(object("Wav"),int,[int],int);
+				// getcos(object,series,[start],end); get cos at [start,end,series];
+int getsin(object("Wav"),int,[int],int);
+				// getsin(object,series,[start],end); get sin at [start,end,series];
+void addcos(object("Wav"),int,ilf,[int],int);
+				// addcos(object,series,vol,[start],end); add cos at [start,end,series];
+void addsin(object("Wav"),int,ilf,[int],int);
+				// addsin(object,series,vol,[start],end); add sin at [start,end,series];
+float toleT(object("Wav"),int,int,int,int);
+				// toleT(object,t0,T0,t1,T1); return Similarity;
+int getT(object("Wav"),int,int,int,float);
+				// getT(object,t,Tmin,Tmax,mSimilarity);
+void 
+
 [.avi.]
+void new(object,string,int,int,[int]);
+				// new(object,path,width,height,[fps]); if (OK) object -> object("Avi");
+void close(object("Avi"));	// close fp(path) and write *.avi's filehead
+void write(object("Avi"),object("Bmp"),int);
+				// write(avi,bmp,[nf]); avi.[w,h] == bmp.[w,h], [nf]=totalFs
+
 

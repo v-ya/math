@@ -24,9 +24,16 @@ _fun(wav_init)
 		if (vl) vp->v.v_void=vl;else goto err;
 	set_var(time,int,Time_max);
 	pTime=&(vl->v.v_int);
+	set_var(Samp,int,SamplingF);
+	vl->mode|=auth_norev;
+	set_var(mSamp,int,SamplingFms);
+	vl->mode|=auth_norev;
+	set_var(mvol,int,0x7fff);
+	vl->mode|=auth_norev;
 	set_fun(new);
 	set_fun(load);
 	set_fun(write);
+	set_fun(clean);
 	set_fun(pset);
 	set_fun(padd);
 	set_fun(pget);
@@ -171,6 +178,24 @@ _fun_wav(write)
 	}
 	err:
 	dp(".wav.write: 参数格式错误\n");
+}
+
+_fun_wav(clean)
+{
+	var *vp;
+	Wav *wav;
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	if (n<1) goto err;
+	vp=argv(0);
+	wav=wav_varget(vp,".wav.clean");
+	if (!wav) return ;
+	if (n==1) Wav_clean(wav,0,wav->size);
+	else if (n==2) Wav_clean(wav,_int(argv(1)),wav->size);
+	else Wav_clean(wav,_int(argv(1)),_int(argv(2)));
+	return ;
+	err:
+	dp(".wav.clean: 参数格式错误\n");
 }
 
 _fun_wav(pset)
