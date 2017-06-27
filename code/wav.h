@@ -8,15 +8,15 @@ int *pTime;
 #define	SamplingF 96000
 #define	SamplingFms 96
 
-Wav* Wav_new(unsigned int mtime)
+Wav* Wav_new(unsigned int size)
 {
 	Wav *wav;
 	unsigned int s;
 	if (pTime==NULL) return NULL;
-	if (mtime==0||mtime>*pTime) return NULL;
+	if (size==0||size>(*pTime*SamplingFms)) return NULL;
 	wav=malloc(sizeof(Wav));
 	if (!wav) return NULL;
-	s=(int)(1.0*mtime*SamplingFms*2);
+	s=size*2;
 	wav->hi.RIFF[0]='R';
 	wav->hi.RIFF[1]='I';
 	wav->hi.RIFF[2]='F';
@@ -42,7 +42,7 @@ Wav* Wav_new(unsigned int mtime)
 	wav->hi.Label_data[2]='t';
 	wav->hi.Label_data[3]='a';
 	wav->hi.data_sz=s;
-	wav->size=s/2;
+	wav->size=size;
 	wav->data=malloc(s);
 	if (wav->data)
 	{
@@ -118,6 +118,12 @@ int Wav_write(Wav *wav, char *path)
 	putc(*(d++),fp);
 	fclose(fp);
 	return 0;
+}
+
+void Wav_clean(Wav *wav, unsigned int a, unsigned int b)
+{
+	if (b>wav->size) b=wav->size;
+	for(;a<b;a++) wav->data[a]=0;
 }
 
 void Wav_set(Wav *wav, unsigned int t, unsigned int v)

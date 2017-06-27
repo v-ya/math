@@ -28,6 +28,7 @@ typedef struct S_wav {
 Wav* Wav_new(unsigned int);
 Wav* Wav_load(char *);
 int Wav_write(Wav *, char *);
+void Wav_clean(Wav *, unsigned int, unsigned int);
 void Wav_set(Wav *, unsigned int, unsigned int);
 void Wav_add(Wav *, unsigned int, unsigned int);
 int Wav_getmax(Wav *, unsigned int, unsigned int);
