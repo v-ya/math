@@ -1,9 +1,10 @@
 # math
 * math script interpreter.
-* See test.txt for detailed usage.
+* See test.math for detailed usage.
 * function usage see "Func-used.txt"
 ---
 ### 预计更新
++ 修复 Bmp Wav Avi 对象释放时产生的内存泄漏
 + 完善分项 Bpm
 - 椭圆渲染函数
 * 完善分项 Wav
