@@ -5,7 +5,7 @@ math: ${obj}
 mdl:
 	cd dl/ && make && cd ../
 run: math
-	./math Ztest.math
+	./math test.math
 clear:
 	rm -f math *.o *.bmp *.wav *.avi model/*.so
 
