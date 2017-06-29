@@ -24,6 +24,8 @@ int glob_init(void)
 	set_fun(set);
 	set_fun(unset);
 	set_fun(func);
+	set_fun(load);
+	set_fun(unload);
 	// other
 	set_fun(void);
 	set_fun(test);
@@ -72,6 +74,9 @@ int glob_init(void)
 	vp=v_alloc(glob_vm,"this",type_void,NULL);
 	vp->mode=type_object|auth_noset|auth_norev|func_code;
 	_this_=vp;
+	// LDPATH
+	vp=v_alloc(glob_vm,"LDPATH",type_string,NULL);
+	
 	// const var
 	vp=v_alloc(glob_vm,"const",type_object|auth_noset|auth_norev,NULL);
 	#define	set_var(_v,_n) v.v_float=_v;vp->v.v_void=var_alloc((var*)vp->v.v_void,#_n,type_float|auth_noset|auth_norev,&v)

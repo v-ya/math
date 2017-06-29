@@ -173,7 +173,7 @@ _fun_wav(write)
 			dp(".wav.write: 不能打开 %s\n",path);
 			return ;
 		case -1:
-			dp(".wav.write: Wav 结构出错\n",path);
+			dp(".wav.write: Wav 结构出错\n");
 			return ;
 	}
 	err:

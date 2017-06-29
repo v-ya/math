@@ -1,6 +1,6 @@
 #include "math.h"
 
-varmat *varmat_alloc(void)
+varmat* varmat_alloc(void)
 {
 	varmat *vm;
 	vm=malloc(sizeof(varmat));

@@ -1,16 +1,14 @@
 #ifndef	_debug_h_
 #define	_debug_h_
 
-#ifdef	_debug_
-	#include <stdio.h>
-	#define	dp(...) _dp(__VA_ARGS__)
-	void _dp(const char *, ...);
-#else
-	#define dp(...) 
-#endif
+#define	dp(...) fprintf(_debug_fp,__VA_ARGS__)
 
+#ifndef __nosym__
+
+extern FILE *_debug_fp;
 void _debug_init(char *path);
-char* dprint(char *);
+
+#endif
 
 #endif
 

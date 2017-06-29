@@ -10,8 +10,11 @@
 * 完成 main.c main() "-var"
 * 实现脚本传参
 * 新加分项 Mat
-* 外置模块加载功能
 * ...
+---
+### v1.0.9 2017.06.29
+* add .load() .unload()
+* 完善导入库基本函数接口调用
 ---
 ### v1.0.8 2017.06.27
 * add .wav.clean() .wav.Samp .wav.mSamp .wav.mvol

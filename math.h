@@ -9,13 +9,16 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <dlfcn.h>
 #include "debug.h"
 #include "string.h"
 #include "var.h"
 #include "fun.h"
 #include "fun_ext.h"
 
-#define	VERSION "v1.0.8"
+#define	VERSION "v1.0.9"
+
+#ifndef __nosym__
 
 extern varmat *math_vm;
 extern varmat *glob_vm;
@@ -27,6 +30,8 @@ char* get_var(char *, var **, var *);
 char* get_float(char *, double *);
 char* cal(char *, var *);
 int math_run(char *, char *, int , var *);
+
+#endif
 
 #endif
 

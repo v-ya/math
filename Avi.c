@@ -175,7 +175,7 @@ _fun_avi(write)
 			dp(".avi.write: 指定帧数超限 %d>%d\n",nf,avi->totalFs);
 			return ;
 		case 3:
-			dp(".avi.write: 文件过大，超过 4GB 限制\n",nf,avi->totalFs);
+			dp(".avi.write: 文件过大，超过 4GB 限制\n");
 			return ;
 		case -1:
 			dp(".avi.write: Avi 结构出错\n");

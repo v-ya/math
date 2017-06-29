@@ -6,6 +6,8 @@
 
 #define is_space(c)	(c==' '||c=='\n'||c=='\t'||c=='\r')
 
+#ifndef __nosym__
+
 // 0 : ==, 1 : !=
 int scmp(char *, char *);
 char* sskip(char *);
@@ -14,6 +16,8 @@ int scmp_skip(char **, char *);
 char* spget(char *, int);
 char* str_skip(char *);
 char* str_alloc(char **);
+
+#endif
 
 #endif
 

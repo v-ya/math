@@ -226,7 +226,7 @@ _fun_bmp(write)
 			dp(".bmp.write: 不能打开 %s\n",path);
 			return ;
 		case -1:
-			dp(".bmp.write: Bmp 结构出错\n",path);
+			dp(".bmp.write: Bmp 结构出错\n");
 			return ;
 	}
 	err:

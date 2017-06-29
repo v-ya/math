@@ -30,6 +30,7 @@ float ldexp(ilf,ilf);
 int ldw_test(string);		// label
 float lg(ilf);
 float ln(ilf);
+void load(string,string);	// load(path,class);
 float log(ilf);
 long long(ilf);
 int lup_test(string);		// label
@@ -52,6 +53,7 @@ void strget(string);		// "name", Will get a line of input assigned to var(name)
 float tan(ilf);
 float tanh(ilf);
 int test(string,[string]);	// test("name",["type"]); Tests if there is a variable of [type "type" with] name "name"
+void unload(string);		// unload(class);
 void [object.]unset(string, ...);
 				// "name"
 [.d.]

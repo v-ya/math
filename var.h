@@ -10,7 +10,7 @@ struct VARMAT;
 typedef union VALUE {
 	void *v_void;
 	int v_int;
-	long long v_long;
+	long int v_long;
 	double v_float;
 	char *v_string;
 	struct VAR *v_object;
@@ -65,8 +65,9 @@ typedef struct VARMAT {
 	struct VAR *vl[256];
 } varmat;
 
+#ifndef __nosym__
 
-varmat *varmat_alloc(void);
+varmat* varmat_alloc(void);
 void varmat_free(varmat *);
 int varmat_ngen(char *);
 void value_free(var *);
@@ -88,6 +89,8 @@ char* str_type(unsigned int);
 void varmat_print(varmat *);
 void varlist_print(var *);
 void var_print(var *);
+
+#endif
 
 #endif
 

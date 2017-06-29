@@ -1,5 +1,52 @@
 #include "math.h"
 
+static funs _fun = {
+	// string.h
+	scmp,
+	sskip,
+	sget,
+	scmp_skip,
+	spget,
+	str_skip,
+	str_alloc,
+	// var.h
+	varmat_alloc,
+	varmat_free,
+	varmat_ngen,
+	value_free,
+	var_alloc,
+	var_ralloc,
+	var_find,
+	var_free,
+	var_listfree,
+	var_listadd,
+	v_alloc,
+	v_find,
+	v_free,
+	v_freeall,
+	v_list,
+	v_add,
+	var_poin,
+	str_type,
+	varmat_print,
+	varlist_print,
+	var_print,
+	// fun.h
+	vlist_set,
+	is_obj,
+	obj_type,
+	is_obj_type,
+	// math.h
+	get_varlist,
+	run_func,
+	get_var,
+	get_float,
+	cal,
+	math_run,
+	// end
+	NULL
+};
+
 char funbuff[funbuff_size];
 #define	vlist_max 16
 char _vlist_buff[vlist_max*sizeof(void*)];
@@ -491,7 +538,7 @@ _fun(echo)
 	vlist=vlist->r;
 	vlist_set(&ap,vlist);
 	vsnprintf(funbuff,funbuff_size,s,ap);
-	dp(funbuff);
+	dp("%s",funbuff);
 	return ;
 }
 
@@ -777,6 +824,152 @@ _fun(func)
 		}
 		*code=0;
 	}
+}
+
+_fun(load)
+{
+	char *path,*class,*error;
+	unsigned int c;
+	var *vp;
+	void *hdl;
+	unsigned int (*check)(unsigned int);
+	int (*init)(void *, void *, void *, void *, void *);
+	
+	if (n<2) goto err;
+	vp=argv(0);
+	path=_string(vp);
+	vp=argv(1);
+	class=_string(vp);
+	if (path==NULL||class==NULL) goto err;
+	vp=v_find(glob_vm,class);
+	if (vp) goto err_name;
+	vp=v_find(glob_vm,"LDPATH");
+	dlerror();
+	if (*path=='/'||vp->v.v_string==NULL) hdl=dlopen(path,RTLD_LAZY);
+	else
+	{
+		snprintf(funbuff,funbuff_size,"%s/%s",vp->v.v_string,path);
+		hdl=dlopen(funbuff,RTLD_LAZY);
+	}
+	if (!hdl) goto err_nodl;
+	check=dlsym(hdl,"check");
+	if (error=dlerror())
+	{
+		dp(".load: 链接库 %s 不能找到 check\n\terror: %s\n",path,error);
+		dlclose(hdl);
+		ret->mode=type_err;
+		ret->v.v_void=NULL;
+		return ;
+	}
+	c=rand();
+	if (check(c)!=(c^DL_check))
+	{
+		dp(".load: 链接库 %s 验证失败\n",path);
+		dlclose(hdl);
+		ret->mode=type_err;
+		ret->v.v_void=NULL;
+		return ;
+	}
+	init=dlsym(hdl,"init");
+	if (error=dlerror())
+	{
+		dp(".load: 链接库 %s 不能找到 init\n\terror: %s\n",path,error);
+		dlclose(hdl);
+		ret->mode=type_err;
+		ret->v.v_void=NULL;
+		return ;
+	}
+	// alloc .import.(class)
+	vp=v_find(glob_vm,"import");
+	vp=var_alloc(vp->v.v_object,class,type_void|auth_noset|auth_norev,NULL);
+	if (!vp)
+	{
+		dp(".load: 申请变量 .import.%s 失败\n",class);
+		dlclose(hdl);
+		ret->mode=type_err;
+		ret->v.v_void=NULL;
+		return ;
+	}
+	vp->v.v_void=hdl;
+	// alloc .(class)
+	vp=v_alloc(glob_vm,class,type_object|auth_noset|auth_norev,NULL);
+	if (!vp)
+	{
+		dp(".load: 申请变量 .%s 失败\n",class);
+		vp=v_find(glob_vm,"import");
+		vp->v.v_object=var_free(vp->v.v_object,class);
+		dlclose(hdl);
+		ret->mode=type_err;
+		ret->v.v_void=NULL;
+		return ;
+	}
+	if (init(vp,&_fun,math_vm,glob_vm,_debug_fp))
+	{
+		dp(".load: 链接库 %s 初始化失败\n",path);
+		vp=v_find(glob_vm,"import");
+		vp->v.v_object=var_free(vp->v.v_object,class);
+		v_free(glob_vm,class);
+		dlclose(hdl);
+		ret->mode=type_err;
+		ret->v.v_void=NULL;
+		return ;
+	}
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	return ;
+	err_nodl:
+	dp(".load: 链接库 %s 不能打开\n\terror: %s\n",path,dlerror());
+	ret->mode=type_err;
+	ret->v.v_void=NULL;
+	return ;
+	err_name:
+	dp(".load: 目标 %s 已存在\n",class);
+	ret->mode=type_err;
+	ret->v.v_void=NULL;
+	return ;
+	err:
+	dp(".load: 未能找到合法参数\n");
+	ret->mode=type_err;
+	ret->v.v_void=NULL;
+	return ;
+}
+
+_fun(unload)
+{
+	char *class,*error;
+	var *vp;
+	void *hdl;
+	void (*uini)(void);
+	
+	if (n<1) goto err;
+	vp=argv(0);
+	class=_string(vp);
+	if (class==NULL) goto err;
+	vp=v_find(glob_vm,"import");
+	vp=var_find(vp->v.v_object,class);
+	if (!vp) goto err_nodl;
+	if (m_type3(vp->mode)!=type_void||m_func(vp->mode)==func_code) goto err_nodl;
+	hdl=vp->v.v_void;
+	uini=dlsym(hdl,"uini");
+	if (error=dlerror()) ;
+	else uini();
+	vp=v_find(glob_vm,"import");
+	vp->v.v_object=var_free(vp->v.v_object,class);
+	v_free(glob_vm,class);
+	dlclose(hdl);
+	ret->mode=type_void;
+	ret->v.v_void=NULL;
+	return ;
+	err_nodl:
+	dp(".unload: 未能找到导入库 %s\n",class);
+	ret->mode=type_err;
+	ret->v.v_void=NULL;
+	return ;
+	err:
+	dp(".unload: 未能找到合法参数\n");
+	ret->mode=type_err;
+	ret->v.v_void=NULL;
+	return ;
 }
 
 // other
