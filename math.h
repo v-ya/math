@@ -16,7 +16,7 @@
 #include "fun.h"
 #include "fun_ext.h"
 
-#define	VERSION "v1.0.9"
+#define	VERSION "v1.0.10"
 
 #ifndef __nosym__
 

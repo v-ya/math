@@ -95,6 +95,9 @@ _fun_wav(new)
 	vl=var_ralloc(vp->v.v_object,"size",type_int|auth_noset|auth_norev,NULL);
 	if (!vl) goto err_alloc;
 	vl->v.v_int=wav->size;
+	vl=var_ralloc(vp->v.v_object,"_poin",m_gen(type_void,auth_noset|auth_norev,1),NULL);
+	if (!vl) goto err_alloc2;
+	((void **)vl->v.v_void)[0]=wav->data;
 	if (obj_type(vp,pType,pTypeWav)) goto err_alloc2;
 	return ;
 	err:
@@ -130,6 +133,9 @@ _fun_wav(load)
 	vl=var_ralloc(vp->v.v_object,"size",type_int|auth_noset|auth_norev,NULL);
 	if (!vl) goto err_alloc;
 	vl->v.v_int=wav->size;
+	vl=var_ralloc(vp->v.v_object,"_poin",m_gen(type_void,auth_noset|auth_norev,1),NULL);
+	if (!vl) goto err_alloc2;
+	((void **)vl->v.v_void)[0]=wav->data;
 	if (obj_type(vp,pType,pTypeWav)) goto err_alloc2;
 	return ;
 	err:

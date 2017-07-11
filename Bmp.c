@@ -145,6 +145,9 @@ _fun_bmp(new)
 	vl=var_ralloc(vp->v.v_object,"Height",type_int|auth_noset|auth_norev,NULL);
 	if (!vl) goto err_alloc2;
 	vl->v.v_int=h;
+	vl=var_ralloc(vp->v.v_object,"_poin",m_gen(type_void,auth_noset|auth_norev,1),NULL);
+	if (!vl) goto err_alloc2;
+	((void **)vl->v.v_void)[0]=bmp->data;
 	if (obj_type(vp,pType,pTypeBmp)) goto err_alloc2;
 	return ;
 	err:
@@ -183,6 +186,9 @@ _fun_bmp(load)
 	vl=var_ralloc(vp->v.v_object,"Height",type_int|auth_noset|auth_norev,NULL);
 	if (!vl) goto err_alloc2;
 	vl->v.v_int=bmp->height;
+	vl=var_ralloc(vp->v.v_object,"_poin",m_gen(type_void,auth_noset|auth_norev,1),NULL);
+	if (!vl) goto err_alloc2;
+	((void **)vl->v.v_void)[0]=bmp->data;
 	if (obj_type(vp,pType,pTypeBmp)) goto err_alloc2;
 	return ;
 	err:

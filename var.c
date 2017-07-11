@@ -33,12 +33,13 @@ int varmat_ngen(char *name)
 void value_free(var *v)
 {
 	int i;
-	if (m_leng(v->mode)&&m_free(v->mode))
+	if (!m_free(v->mode)) return ;
+	if (m_leng(v->mode))
 	{
-		if (m_type(v->mode)==type_string)
+		if (m_type(v->mode)==type_void||m_type(v->mode)==type_string)
 		{
 			for(i=m_leng(v->mode)-1;i>=0;i--)
-			free(((char **)(v->v.v_void))[i]);
+			free(((void **)(v->v.v_void))[i]);
 		}
 		else if (m_type(v->mode)==type_object)
 		{
@@ -47,9 +48,9 @@ void value_free(var *v)
 		}
 		free(v->v.v_void);
 	}
-	else if (m_type(v->mode)==type_void&&m_free(v->mode)) free(v->v.v_void);
-	else if (m_type(v->mode)==type_string&&m_free(v->mode)) free(v->v.v_string);
-	else if (m_type(v->mode)==type_object&&m_free(v->mode)) var_listfree(v->v.v_object);
+	else if (m_type(v->mode)==type_void) free(v->v.v_void);
+	else if (m_type(v->mode)==type_string) free(v->v.v_string);
+	else if (m_type(v->mode)==type_object) var_listfree(v->v.v_object);
 	v->v.v_void=NULL;
 	v->mode&=~free_need;
 }
@@ -126,6 +127,9 @@ var* var_alloc(var *vl, char *name, unsigned int mode, value *vp)
 		void *data;
 		switch (m_type(v->mode))
 		{
+			case type_void:
+				size=sizeof(void *);
+				break;
 			case type_int:
 				size=sizeof(int);
 				break;
