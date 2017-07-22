@@ -71,3 +71,4 @@ void set_title(string title, [string icon]):
 	设置窗口标题为 title，图标为 icon（可能不管用）
 int get_key(int key):
 	判断 key 键是否被按下
+
