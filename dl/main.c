@@ -12,7 +12,7 @@ _fun(model_name)
 int model_init(void)
 {
 	int err;
-	err|=regfun("model_name",_func_model_name);
+	err|=regfun("model_name",model_name);
 	return err;
 }
 

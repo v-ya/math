@@ -19,8 +19,9 @@ extern FILE *_debug_fp;
 int model_init(void);
 void model_uini(void);
 int _regfun(var *, char *, func);
-#define regfun(n,c) _regfun(NULL,n,c)
-
+#define regfun(n,c) _regfun(NULL,n,_func_##c)
+#define regfun2(o,n,c) _regfun(o,n,_func_##c)
+#define	argv(argc) fun->var_find(vlist,fun->spget("_",argc))
 
 #endif
 
