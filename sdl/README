@@ -1,0 +1,73 @@
+# sdl-v1.0.0
+
+# [预计更新内容]
+	可按集合设置事件处理方法 @set_event()
+	完善的定时功能
+	可行的自定义建立线程功能
+		建立线程的多功能性（单次、多次循环、事件序列、定时延时建立……）
+	*音频功能实现
+
+# [v1.0.0 2017.07.22]
+	完成 sdl 模块基本功能
+	完成包括鼠标键盘等多种事件的自定义处理功能
+	增加自动刷新窗口功能（按帧率 fps）
+
+---------------------------------------------------------------------------------------------------------
+# sdl 库函数介绍
+# 可使用 .load("model/sdl.so","sdl") 加载（路径与生成对象可替换），使用 .unload("sdl") 卸载
+# 所有 sdl 库函数变量均在对象 .sdl 内
+# 以下为 .["sdl"].* 内容（这里为 .sdl.*）
+
+string model_name():
+	返回 sdl 库名称，包括版本号
+void open(int w, int h, [int is_resize]):
+	打开图形窗口(w,h)，如果存在 is_resize 且不为零，则窗口可调整大小
+	如果窗口已打开，再执行该函数关闭原有窗口重新打开，并更新 get_bmp 函数获取的窗口位图格式
+	PS: 如果可以的话，尽量少用 is_resize 选项
+void close():
+	清除窗口位图，关闭窗口
+void delay(int ms):
+	延时 ms 毫秒
+void update([int x, int y, int w, int h]):
+	更新窗口位图矩形区域(x,y,w,h)，如果未设置矩形则更新整个窗口
+	PS: 如果矩形区域没有完全在窗口尺寸内，则更新整个窗口
+void set_fps([float fps]):
+	设置并开启（如果原本没有且 fps 合格的话）窗口刷新帧频，如果 fps 未设置或为零或不合法，则取消自动刷新
+	PS: 可以从 .["sdl"].fps 读取当前帧频，为零表示未设置自动刷新
+void get_bmp([string name]):
+	设置变量名为 name 的 object 类型变量（已存在）为 Bmp 扩展类，其内容为窗口位图（坐标原点位于左上角）
+	PS1: 无论设置是否成功，均会清除原本设置的变量，可以不传参调用以清除原先设置的变量
+	PS2: 设置成功后目标变量会被增加 auth_noset|auth_norev 属性，使变量无权更改类型与子项，被动清除后恢复
+void set_event(string event, [string func]):
+	设置事件 event 的调用方法为 func，不传参 func 则清除事件 event 的调用方法
+	PS1: func 的格式一般（类似 HTML 中执行的 JavaScript 命令）为 "func()"，可附加参数，但影响效率
+	PS2: event 的取值为:
+		"NOEVENT"		无事件，一般出现在 PollEvent 后
+		"ACTIVEEVENT"		窗口焦点变化事件
+		"KEYDOWN"		键盘按键按下事件
+		"KEYUP"			键盘按键松开事件
+		"MOUSEMOTION"		鼠标移动事件
+		"MOUSEBUTTONDOWN"	鼠标按键按下事件
+		"MOUSEBUTTONUP"		鼠标按键松开事件
+		"JOYAXISMOTION"		操纵杆轴运动事件
+		"JOYBALLMOTION"		操纵杆轨迹球运动事件
+		"JOYHATMOTION"		操纵杆位置更改事件
+		"JOYBUTTONDOWN"		操纵杆按钮按下事件
+		"JOYBUTTONUP"		操纵杆按钮松开事件
+		"QUIT"			用户请求退出事件
+		"SYSWMEVENT"		系统特定事件，暂时不支持获取具体内容，目前无用
+		"VIDEORESIZE"		用户调整窗口大小事件，在 open 函数中使用 is_resize 后可用
+		"VIDEOEXPOSE"		屏幕需要重绘事件，用户抛出事件，目前无用
+int wait_event():
+	等待事件（阻塞模式 WaitEvent）并调用方法，返回事件调用方法的返回值，如果没有调用方法则返回 0
+int poll_event():
+	获得事件（非阻塞模式 PollEvent，如果无事件则视为事件 NOEVENT）并调用方法，返回事件调用方法的返回值，如果没有调用方法则返回 0
+void in_loop([int t]):
+	进入事件循环，阻塞运行除非窗口被关闭或调用 out_loop 函数
+	如果未传递 t 则以 WaitEvent 模式循环阻塞，否则以 PollEvent 模式循环阻塞（每间隔 t 毫秒后调用）
+void out_loop():
+	退出事件循环
+void set_title(string title, [string icon]):
+	设置窗口标题为 title，图标为 icon（可能不管用）
+int get_key(int key):
+	判断 key 键是否被按下
