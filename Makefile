@@ -9,7 +9,7 @@ mdl: dl/* sdl/*
 	@echo > mdl
 	@echo "make model/*.so"
 run: all
-	./math Ztest.math
+	./math test.math
 clear:
 	rm -f math *.o *.bmp *.wav *.avi model/*.so mdl
 
